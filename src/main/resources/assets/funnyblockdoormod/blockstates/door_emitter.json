@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "" : {
+      "model": "funnyblockdoormod:block/door_emitter"
+    }
+  }
+}

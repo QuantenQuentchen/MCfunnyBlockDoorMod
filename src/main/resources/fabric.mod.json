@@ -1,0 +1,54 @@
+{
+	"schemaVersion": 1,
+	"id": "funnyblockdoormod",
+	"version": "${version}",
+	"name": "FunnyBlockDoorMod",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/funnyblockdoormod/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			{
+				"value": "funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod",
+				"adapter": "kotlin"
+			}
+		],
+		"client": [
+			{
+				"value": "funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorModClient",
+				"adapter": "kotlin"
+			}
+		],
+		"fabric-datagen": [
+			{
+				"value": "funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorModDataGenerator",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"mixins": [
+		"funnyblockdoormod.mixins.json",
+		{
+			"config": "funnyblockdoormod.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.20",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": ">=1.9.23"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
