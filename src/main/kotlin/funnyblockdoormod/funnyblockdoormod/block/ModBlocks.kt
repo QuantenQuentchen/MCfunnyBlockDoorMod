@@ -1,7 +1,7 @@
 package funnyblockdoormod.funnyblockdoormod.block
 
 import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
-import funnyblockdoormod.funnyblockdoormod.block.custom.quickAndDirtyTestBlock
+import funnyblockdoormod.funnyblockdoormod.block.custom.doorEmitterBlock
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings
 import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
 import net.minecraft.block.Block
@@ -15,7 +15,7 @@ import net.minecraft.util.Identifier
 object ModBlocks {
 
     val DOOREMITTER: Block = registerBlock("door_emitter",
-        quickAndDirtyTestBlock(FabricBlockSettings.copy(Blocks.DIAMOND_BLOCK)))
+        doorEmitterBlock(FabricBlockSettings.copy(Blocks.DIAMOND_BLOCK)))
 
     private fun registerBlockItem(name: String, block: Block): Item {
         return Registry.register(Registries.ITEM, Identifier(FunnyBlockDoorMod.MOD_ID, name),

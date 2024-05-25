@@ -3,12 +3,10 @@ package funnyblockdoormod.funnyblockdoormod
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtInt
 import net.minecraft.nbt.NbtList
-import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.PersistentState
 import net.minecraft.world.PersistentStateManager
-import java.util.function.Function
 
 class funnyDoorPersistantState: PersistentState() {
 

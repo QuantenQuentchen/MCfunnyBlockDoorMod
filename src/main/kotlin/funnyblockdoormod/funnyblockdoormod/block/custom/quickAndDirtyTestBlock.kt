@@ -34,19 +34,7 @@ class quickAndDirtyTestBlock(settings: Settings): Block(settings) {
     }
 
     companion object {
-        private val emittingPrism: OBB = OBB.createOBB(5.0, 5.0, 10.0)
-        private val voxelizedPrism: Array<Array<Array<BlockPos?>>>
-
-        init {
-            runBlocking {
-                rotatePrism()
-            }
-            voxelizedPrism = emittingPrism.voxelize()
-        }
-
-        private suspend fun rotatePrism() {
-            emittingPrism.rotate(0f, 90f,0f)
-        }
+        private val voxelizedPrism = OBB.getEmittingGrid(0f, 90f, 0f).grid
     }
 
     private fun testEmit(world: World, pos: BlockPos){
@@ -63,10 +51,8 @@ class quickAndDirtyTestBlock(settings: Settings): Block(settings) {
             Blocks.NETHERITE_BLOCK.defaultState,
             Blocks.OBSIDIAN.defaultState,
             Blocks.CRYING_OBSIDIAN.defaultState,
-            Blocks.COPPER_BLOCK.defaultState,)
-
-
-
+            Blocks.COPPER_BLOCK.defaultState
+        )
 
         for (xPlane in voxelizedPrism) {
             for ((idx,yPlane) in xPlane.withIndex()) {

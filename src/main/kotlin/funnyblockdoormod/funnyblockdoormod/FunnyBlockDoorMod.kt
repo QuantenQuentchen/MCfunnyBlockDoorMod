@@ -1,14 +1,22 @@
 package funnyblockdoormod.funnyblockdoormod
 
 import funnyblockdoormod.funnyblockdoormod.block.ModBlocks
+import funnyblockdoormod.funnyblockdoormod.block.entitiy.ModBlockEntities
+import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.teamRebornEnergy
+import funnyblockdoormod.funnyblockdoormod.block.entitiy.doorEmitterBlockEntity
 import funnyblockdoormod.funnyblockdoormod.item.ModItemGroups
 import funnyblockdoormod.funnyblockdoormod.item.ModItems
+import funnyblockdoormod.funnyblockdoormod.screen.DoorEmitterScreenHandler
+import funnyblockdoormod.funnyblockdoormod.screen.ModScreenHandlers
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Identifier
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -37,10 +45,32 @@ object FunnyBlockDoorMod : ModInitializer {
 			return@Before true
 		})
 		 */
+		ServerPlayNetworking.registerGlobalReceiver(Identifier("funnyblockdoormod", "update_depth")) { server, player, handler, buf, responseSender ->
+			val newDepth = buf.readInt()
+
+			server.execute {
+				// Update the depth variable on the server side
+				val screenHandler = player.currentScreenHandler
+				if (screenHandler is DoorEmitterScreenHandler) {
+					screenHandler.setDepth(newDepth)
+				}
+			}
+		}
+
+
+		if (FabricLoader.getInstance().isModLoaded("team_reborn_energy")) {
+			logger.info("Tech Reborn is loaded")
+			doorEmitterBlockEntity.defaultEnergyBehaviourFactory = teamRebornEnergy.Companion
+		} else {
+			logger.info("Tech Reborn is not loaded")
+			// Tech Reborn is not loaded, do not use its API
+		}
+
 		ModItems.registerItems()
 		ModBlocks.registerModBlocks()
 		ModItemGroups.registerItemGroups()
-
+		ModScreenHandlers.registerScreenHandlers()
+		ModBlockEntities.registerBlockEntities()
 
 	}
 }
