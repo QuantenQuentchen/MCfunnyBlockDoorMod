@@ -16,6 +16,8 @@ class noEnergy(blockEntity: BlockEntity): IenergyBehaviour {
         }
     }
 
+    override val energyType = IenergyBehaviour.EnergyType.NONE
+
     override val energyStorage: Any?
         get() = null
 

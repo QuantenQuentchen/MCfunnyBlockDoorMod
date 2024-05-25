@@ -217,6 +217,7 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
     }
 
     override fun onInventoryChanged(sender: Inventory?) {
+        FunnyBlockDoorMod.logger.info("Inventory change detected for door emitter block entity")
         sendContentUpdates()
     }
 

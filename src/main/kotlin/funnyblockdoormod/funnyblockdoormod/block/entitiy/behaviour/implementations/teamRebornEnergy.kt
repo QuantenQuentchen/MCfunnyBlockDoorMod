@@ -38,6 +38,8 @@ class teamRebornEnergy(private val blockEntity: BlockEntity): IenergyBehaviour {
 
     }
 
+    override val energyType = IenergyBehaviour.EnergyType.TEAM_REBORN
+
     override fun afterTypeCreation() {
         EnergyStorage.SIDED.registerForBlockEntity(
             { _, _ -> this.energyStorage},

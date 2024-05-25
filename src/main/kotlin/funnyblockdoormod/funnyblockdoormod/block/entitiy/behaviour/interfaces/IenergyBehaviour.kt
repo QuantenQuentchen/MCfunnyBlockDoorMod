@@ -2,6 +2,13 @@ package funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces
 
 interface IenergyBehaviour {
 
+    enum class EnergyType {
+        NONE,
+        TEAM_REBORN
+    }
+
+    val energyType: EnergyType
+
     val energyStorage: Any?
 
     fun init()
