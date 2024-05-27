@@ -13,13 +13,10 @@ class DoorEmitterInventorySlot(inventory: doorEmitterInventory, private var inde
     : Slot(inventory, index, x, y) {
         var depth: Int = 0
 
-    fun modifyDepth(depth: Int) {
-        this.depth = depth
-    }
-
     private fun calculateIndex(): Int {
         //FunnyBlockDoorMod.logger.info("Index: $index, Depth: $depth")
-        return index + (depth * 25)
+        //val depth = (inventory as doorEmitterInventory).depth
+        return index// + (depth * 25)
     }
 
     override fun getStack(): ItemStack {

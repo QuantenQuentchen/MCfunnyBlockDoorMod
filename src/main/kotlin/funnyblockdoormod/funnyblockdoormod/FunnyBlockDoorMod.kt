@@ -45,15 +45,16 @@ object FunnyBlockDoorMod : ModInitializer {
 			return@Before true
 		})
 		 */
-		ServerPlayNetworking.registerGlobalReceiver(Identifier("funnyblockdoormod", "update_depth")) { server, player, handler, buf, responseSender ->
-			val newDepth = buf.readInt()
+		ServerPlayNetworking.registerGlobalReceiver(Identifier(MOD_ID, "update_depth_d"))
+		{ server, player, handler, buf, responseSender ->
+			val pos = buf.readBlockPos()
+			val deltaDepth = buf.readInt()
 
 			server.execute {
 				// Update the depth variable on the server side
-				val screenHandler = player.currentScreenHandler
-				if (screenHandler is DoorEmitterScreenHandler) {
-					screenHandler.setDepth(newDepth)
-				}
+				val blockEntity = player.world.getBlockEntity(pos) as? doorEmitterBlockEntity ?: return@execute
+
+				blockEntity.modifyInvDepth(deltaDepth)
 			}
 		}
 

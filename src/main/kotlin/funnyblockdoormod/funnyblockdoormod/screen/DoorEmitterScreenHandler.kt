@@ -33,8 +33,6 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
 
     private val dynamicSlots: MutableList<DoorEmitterInventorySlot> = mutableListOf()
 
-    private var invDepth: Int = 0
-
     constructor(syncId: Int, inventory: PlayerInventory, buf: PacketByteBuf):
             this(syncId, inventory, inventory.player.world.getBlockEntity(buf.readBlockPos()), ArrayPropertyDelegate(2))
 
@@ -72,48 +70,23 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
         }
     }
 
-    private fun updateDynamicSlots(){
-        for(slot in dynamicSlots){
-            FunnyBlockDoorMod.logger.info("Slot: ${slot.id}")
-            slot.modifyDepth(invDepth)
-        }
-    }
-
     fun incrementInvDepth(){
-        invDepth++
-        if(invDepth > 25){
-            invDepth = 0
-        }
-        updateDynamicSlots()
-        sendDepthUpdatePacketToServer()
-
+        sendDepthDeltaPacketToServer(1)
     }
 
     fun decrementInvDepth(){
-        invDepth--
-        if(invDepth < 0){
-            invDepth = 25
-        }
-        updateDynamicSlots()
-        sendDepthUpdatePacketToServer()
+        sendDepthDeltaPacketToServer(-1)
 
     }
 
-    private fun sendDepthUpdatePacketToServer() {
+    private fun sendDepthDeltaPacketToServer(invDepthDelta: Int) {
         // Create a packet that contains the new depth value
         val buf = PacketByteBuf(Unpooled.buffer())
-        buf.writeInt(invDepth)
+        buf.writeBlockPos(blockEntity.pos)
+        buf.writeInt(invDepthDelta)
 
         // Send the packet to the server
-        ClientPlayNetworking.send(Identifier("funnyblockdoormod", "update_depth"), buf)
-    }
-
-    fun setDepth(depth: Int){
-        if(depth < 0 || depth > 25){
-            return
-        }
-        invDepth = depth
-        updateDynamicSlots()
+        ClientPlayNetworking.send(Identifier(FunnyBlockDoorMod.MOD_ID, "update_depth_d"), buf)
     }
 
 
@@ -208,8 +181,9 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
     fun getZAngle(): Int {
         return zAngle
     }
+
     fun getInvDepth(): Int {
-        return invDepth
+        return propertyDelegate.get(0)
     }
 
     fun getBlockedSlots(): MutableSet<Int> {

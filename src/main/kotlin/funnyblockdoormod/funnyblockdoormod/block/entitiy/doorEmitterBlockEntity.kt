@@ -1,5 +1,6 @@
 package funnyblockdoormod.funnyblockdoormod.block.entitiy
 
+import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
 import funnyblockdoormod.funnyblockdoormod.block.custom.blockPlaceUtil
 import funnyblockdoormod.funnyblockdoormod.block.custom.doorEmitterInventory
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.baseWirelessRedstone
@@ -46,12 +47,12 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     }
 
     constructor(pos: BlockPos, state: BlockState) : super(ModBlockEntities.DOOR_EMITTER_BLOCK_ENTITY, pos, state){
-        energyBehaviour.afterTypeCreation()
+        energyBehaviour.afterTypeCreation() // The fuck ?!?
 
         this.propertyDelegate = object : PropertyDelegate {
             override fun get(index: Int): Int {
                 return when (index) {
-                    0 -> progress
+                    0 -> invDepth
                     1 -> maxProgress
                     else -> 0
                 }
@@ -59,7 +60,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
             override fun set(index: Int, value: Int) {
                 when (index) {
-                    0 -> progress = value
+                    0 -> invDepth = value
                     1 -> maxProgress = value
                 }
             }
@@ -85,7 +86,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     protected val propertyDelegate: PropertyDelegate
     private var isEmitting = false
     private var isRetracting = false
-    private var progress: Int = 0
+    private var invDepth: Int = 0
     private var maxProgress: Int = 73
 
     private var blockDelay: Int = 10
@@ -112,7 +113,6 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private var redstoneActivationBehaviour = false
 
     private var lastTickTime = System.currentTimeMillis()
-
     private val currentXAngle: Float = 0f
     private val currentYAngle: Float = 0f
     private val currentZAngle: Float = 0f
@@ -145,7 +145,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     override fun writeNbt(nbt: NbtCompound?) {
         super.writeNbt(nbt)
         nbt?.put("inventory", inventory.toNbt())
-        nbt?.putInt("progress", progress)
+        nbt?.putInt("invDepth", invDepth)
     }
 
     override fun markDirty() {
@@ -155,7 +155,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     override fun readNbt(nbt: NbtCompound?) {
         super.readNbt(nbt)
         inventory = doorEmitterInventory.fromNbt(nbt!!.get("inventory") as NbtCompound)
-        progress = nbt.getInt("progress") ?: 0
+        invDepth = nbt.getInt("progress") ?: 0
     }
 
     override fun getItems(): DefaultedList<ItemStack> {
@@ -166,7 +166,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
         return playerInventory?.let { DoorEmitterScreenHandler(syncId, it, this, propertyDelegate) }
     }
 
-    fun getBlockStateFromItemStack(itemStack: ItemStack): BlockState? {
+    private fun getBlockStateFromItemStack(itemStack: ItemStack): BlockState? {
         val item = itemStack.item
         if (item is BlockItem) {
             val block: Block = item.block
@@ -175,7 +175,20 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
         return null
     }
 
+    fun modifyInvDepth(invDepthDelta: Int) {
+        invDepth += invDepthDelta
+        if(invDepth < 0){
+            invDepth = 24
+        }
+        if(invDepth > 24){
+            invDepth = 0
+        }
+        inventory.depth = invDepth
+    }
+
     fun tick(world: World, pos: BlockPos, state: BlockState) {
+        FunnyBlockDoorMod.logger.warn(invDepth.toString())
+        FunnyBlockDoorMod.logger.warn(propertyDelegate.get(0).toString())
         if(world.isClient) return
         if(!canOperate()) return
         if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return

@@ -47,6 +47,16 @@ class doorEmitterInventory(): Inventory{
     private var layer = 0
     private val listeners = mutableListOf<WeakReference<InventoryChangedListener>>()
 
+    var depth = 0
+        set(value) {
+            field = value
+            if (value < 0) {
+                field = 0
+            }
+            if (value >= inventory.size) {
+                field = inventory.size - 1
+            }
+        }
 
     fun addListener(listener: InventoryChangedListener) {
         listeners.add(WeakReference(listener))
@@ -224,8 +234,8 @@ class doorEmitterInventory(): Inventory{
     private fun convertTo3D(index: Int): Triple<Int, Int, Int> {
         val x = index % inventory[0][0].size
         val y = (index / inventory[0][0].size) % inventory[0].size
-        val z = index / (inventory[0][0].size * inventory[0].size)
-        return Triple(x, y, z)
+        //val z = index / (inventory[0][0].size * inventory[0].size)
+        return Triple(x, y, depth)
     }
 
     override fun setStack(slot: Int, stack: ItemStack?) {

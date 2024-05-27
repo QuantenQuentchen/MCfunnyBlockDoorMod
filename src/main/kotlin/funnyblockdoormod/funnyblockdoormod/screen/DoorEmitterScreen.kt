@@ -143,7 +143,6 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
 
         // Calculate the position of the text relative to the GUI
 
-
         // Draw the text
         val textCords = transformToGui(invDepthX, invDepthY)
         val textX = textCords.first
