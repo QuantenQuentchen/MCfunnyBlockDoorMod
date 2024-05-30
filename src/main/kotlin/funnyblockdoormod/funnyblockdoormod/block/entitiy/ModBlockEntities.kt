@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntit
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
+import net.minecraft.util.Identifier
 
 object ModBlockEntities {
 
@@ -14,7 +15,7 @@ object ModBlockEntities {
     private fun registerDoorEmitterBlockEntity(): BlockEntityType<doorEmitterBlockEntity> {
         val be = Registry.register(
             Registries.BLOCK_ENTITY_TYPE,
-            "funnyblockdoormod:door_emitter",
+            Identifier(FunnyBlockDoorMod.MOD_ID, "door_emitter"),
             FabricBlockEntityTypeBuilder.create(
                 ::doorEmitterBlockEntity,
                 ModBlocks.DOOREMITTER

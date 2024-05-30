@@ -11,6 +11,7 @@ import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.Iw
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneReciever
 import funnyblockdoormod.funnyblockdoormod.core.containerClasses.BlockState3DGrid
 import funnyblockdoormod.funnyblockdoormod.core.dataClasses.OBB
+import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.InventoryDepthChange
 import funnyblockdoormod.funnyblockdoormod.screen.DoorEmitterScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
@@ -33,7 +34,8 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 
-class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, ImplementedInventory, IwirelessRedstoneReciever {
+class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, ImplementedInventory, IwirelessRedstoneReciever,
+    InventoryDepthChange{
 
     companion object {
         private val INPUT_SLOT = 0
@@ -53,7 +55,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
             override fun get(index: Int): Int {
                 return when (index) {
                     0 -> invDepth
-                    1 -> maxProgress
+                    1 -> encodedSlotStates
                     else -> 0
                 }
             }
@@ -61,7 +63,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
             override fun set(index: Int, value: Int) {
                 when (index) {
                     0 -> invDepth = value
-                    1 -> maxProgress = value
+                    1 -> encodedSlotStates = value
                 }
             }
 
@@ -87,7 +89,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private var isEmitting = false
     private var isRetracting = false
     private var invDepth: Int = 0
-    private var maxProgress: Int = 73
+    private var encodedSlotStates: Int = 0
 
     private var blockDelay: Int = 10
     private var currentBlockDelay: Int = blockDelay
@@ -118,7 +120,6 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private val currentZAngle: Float = 0f
 
     private var currentEmittingGrid = OBB.getEmittingGrid(currentXAngle, currentYAngle, currentZAngle)
-    private var currentGridBlocks = BlockState3DGrid(25, 25, 25)
 
     private var energyConsumptionPerBlockBase = 10
 
@@ -186,9 +187,19 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
         inventory.depth = invDepth
     }
 
+    private fun encodeBlockedStates(blockedSlots: MutableSet<Int>): Int{
+        var compundInt = 0
+        for (i in blockedSlots){
+            compundInt = compundInt or (1 shl i)
+        }
+        return compundInt
+    }
+
+    fun setBlockedSlotsDelegate(blockedSlots: MutableSet<Int>){
+        this.propertyDelegate.set(1, encodeBlockedStates(blockedSlots))
+    }
+
     fun tick(world: World, pos: BlockPos, state: BlockState) {
-        FunnyBlockDoorMod.logger.warn(invDepth.toString())
-        FunnyBlockDoorMod.logger.warn(propertyDelegate.get(0).toString())
         if(world.isClient) return
         if(!canOperate()) return
         if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return
@@ -246,6 +257,14 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
     override fun onChannelChange(isActive: Boolean) {
         setCharged(isActive)
+    }
+
+    override fun onDepthChange(depth: Int) {
+        when(depth){
+            1 -> setBlockedSlotsDelegate(mutableSetOf(12))
+            else -> setBlockedSlotsDelegate(mutableSetOf())
+        }
+
     }
 
 }

@@ -30,6 +30,7 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
     private var zAngle: Int = 0
 
     private var blockedSlots: MutableSet<Int> = mutableSetOf()
+    private var lastBlockedSlotCompund: Int = 0
 
     private val dynamicSlots: MutableList<DoorEmitterInventorySlot> = mutableListOf()
 
@@ -112,6 +113,7 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
     }
 
     override fun canInsertIntoSlot(slot: Slot?): Boolean {
+        getBlockedSlotsDelegate()
         if(blockedSlots.contains(slot?.id)){
             return false
         }
@@ -140,6 +142,15 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
             }
         }
         return newStack
+    }
+
+    private fun decodeBlockedStates(compundInt: Int){
+        blockedSlots.clear()
+        for (i in 0 .. 24){
+            if(compundInt and (1 shl i) != 0){
+                blockedSlots.add(i)
+            }
+        }
     }
 
     override fun onClosed(player: PlayerEntity?) {
@@ -186,8 +197,65 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
         return propertyDelegate.get(0)
     }
 
+    private fun getBlockedSlotsDelegate() {
+        val compundInt = this.propertyDelegate.get(1)
+        if(lastBlockedSlotCompund == compundInt) return
+        lastBlockedSlotCompund = compundInt
+        decodeBlockedStates(this.propertyDelegate.get(1))
+        return
+    }
+
     fun getBlockedSlots(): MutableSet<Int> {
+        getBlockedSlotsDelegate()
         return blockedSlots
+    }
+
+    fun incrementXAngle(){
+        xAngle++
+        if(xAngle > 360){
+            xAngle = 0
+        }
+        //sendAngleUpdatePacketToServer()
+    }
+
+    fun decrementXAngle(){
+        xAngle--
+        if(xAngle < 0){
+            xAngle = 360
+        }
+        //sendAngleUpdatePacketToServer()
+    }
+
+    fun incrementYAngle(){
+        yAngle++
+        if(yAngle > 360){
+            yAngle = 0
+        }
+        //sendAngleUpdatePacketToServer()
+    }
+
+    fun decrementYAngle(){
+        yAngle--
+        if(yAngle < 0){
+            yAngle = 360
+        }
+        //sendAngleUpdatePacketToServer()
+    }
+
+    fun incrementZAngle(){
+        zAngle++
+        if(zAngle > 360){
+            zAngle = 0
+        }
+        //sendAngleUpdatePacketToServer()
+    }
+
+    fun decrementZAngle(){
+        zAngle--
+        if(zAngle < 0){
+            zAngle = 360
+        }
+        //sendAngleUpdatePacketToServer()
     }
 
     override fun onInventoryChanged(sender: Inventory?) {

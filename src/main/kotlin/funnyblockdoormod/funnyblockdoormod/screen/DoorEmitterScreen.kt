@@ -1,13 +1,13 @@
 package funnyblockdoormod.funnyblockdoormod.screen
 
 import com.mojang.blaze3d.systems.RenderSystem
+import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
+import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.ButtonIcon
+import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IconButtonWidget
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.LimitedNumberFieldWidget
-import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.render.GameRenderer
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Text
@@ -16,13 +16,10 @@ import net.minecraft.util.Identifier
 class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInventory, title: Text)
     : HandledScreen<DoorEmitterScreenHandler>(handler, inventory, title) {
 
-        private val texture = Identifier("funnyblockdoormod", "textures/gui/door_emitter_gui_legacy.png")
+        private val texture = Identifier(FunnyBlockDoorMod.MOD_ID, "textures/gui/door_emitter_gui_legacy.png")
 
     private val maxAngle = 360
     private val minAngle = 0
-
-    private val invDepthX = 137
-    private val invDepthY = 56
 
     private val upBtnX = 0
     private val upBtnY = 0
@@ -30,51 +27,98 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
     private val downBtnX = 50
     private val downBtnY = 50
 
-    private val xAngleInputX = 0
-    private val xAngleInputY = 0
+    private val xAngleInputX = 10
+    private val xAngleInputY = 27
     private lateinit var xAngleInput: LimitedNumberFieldWidget
 
-    private val yAngleInputX = 0
-    private val yAngleInputY = 0
+    private val yAngleInputX = 10
+    private val yAngleInputY = 61
     private lateinit var yAngleInput: LimitedNumberFieldWidget
 
-    private val zAngleInputX = 0
-    private val zAngleInputY = 0
+    private val zAngleInputX = 10
+    private val zAngleInputY = 95
     private lateinit var zAngleInput: LimitedNumberFieldWidget
 
 
+    private val incrButtonWidth = 13
+    private val incrButtonHeight = 9
+    private val incrButtonHeightOffset = 14
 
+    private val invDepthIncrX = 136
+    private val invDepthIncrY = 45
+
+    private val invDepthX = 136
+    private val invDepthY = 34
+
+    private val xAngleIncrX = 16
+    private val xAngleIncrY = 16
+
+    private val yAngleIncrX = 16
+    private val yAngleIncrY = 50
+
+    private val zAngleIncrX = 16
+    private val zAngleIncrY = 84
+
+    private val inputWidth = 25
+    private val inputHeight = 10
+
+    private val upIcon = ButtonIcon(
+        texture,
+        176, 17,
+        9, 5,
+        0, 9,
+        5
+    )
+
+    private val downIcon = ButtonIcon(
+        texture,
+        176, 22,
+        9, 5,
+        0, 9,
+        5
+    )
+
+    private val blockedSlot = ButtonIcon(
+        texture,
+        176, 0,
+        16, 16,
+        0, 16,
+        16
+    )
 
     override fun init() {
         super.init()
-
         addInputFields()
-        addIncrementButtons()
+        this.playerInventoryTitleX = 32113
+        this.playerInventoryTitleY = 0
+        // Add invDepth increment buttons
+        addIncrementButtons(invDepthIncrX, invDepthIncrY, {handler.incrementInvDepth()}, {handler.decrementInvDepth()})
 
+        // Add Angle increment buttons
+        addIncrementButtons(xAngleIncrX, xAngleIncrY, { handler.decrementXAngle() }, { handler.incrementXAngle() })
+        addIncrementButtons(yAngleIncrX, yAngleIncrY, { handler.decrementYAngle() }, { handler.incrementYAngle() })
+        addIncrementButtons(zAngleIncrX, zAngleIncrY, { handler.decrementZAngle() }, { handler.incrementZAngle() })
     }
 
 
     private fun addInputFields() {
-        xAngleInput = LimitedNumberFieldWidget(textRenderer, 0, 0, 50, 20)
+        val xCords = transformToGui(xAngleInputX, xAngleInputY)
+        xAngleInput = LimitedNumberFieldWidget(textRenderer, xCords.first, xCords.second, inputWidth, inputHeight)
         xAngleInput.setMaxLength(3)
         xAngleInput.minNumber = minAngle
         xAngleInput.maxNumber = maxAngle
-        xAngleInput.x = xAngleInputX
-        xAngleInput.y = xAngleInputY
 
-        yAngleInput = LimitedNumberFieldWidget(textRenderer, 0, 0, 50, 20)
+        val yCord = transformToGui(yAngleInputX, yAngleInputY)
+        yAngleInput = LimitedNumberFieldWidget(textRenderer, yCord.first, yCord.second, inputWidth, inputHeight)
         yAngleInput.setMaxLength(3)
         yAngleInput.minNumber = minAngle
         yAngleInput.maxNumber = maxAngle
-        yAngleInput.x = yAngleInputX
-        yAngleInput.y = yAngleInputY
 
-        zAngleInput = LimitedNumberFieldWidget(textRenderer, 0, 0, 50, 20)
+        val zCord = transformToGui(zAngleInputX, zAngleInputY)
+        zAngleInput = LimitedNumberFieldWidget(textRenderer, zCord.first, zCord.second, inputWidth, inputHeight)
         zAngleInput.setMaxLength(3)
         zAngleInput.minNumber = minAngle
         zAngleInput.maxNumber = maxAngle
-        zAngleInput.x = zAngleInputX
-        zAngleInput.y = zAngleInputY
 
 
         addDrawableChild(xAngleInput)
@@ -87,24 +131,44 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         addSelectableChild(zAngleInput)
     }
 
-    private fun addIncrementButtons(){
-        val upAction: ButtonWidget.PressAction = ButtonWidget.PressAction { button ->
-            handler.incrementInvDepth()
-        }
-        val downAction: ButtonWidget.PressAction = ButtonWidget.PressAction { button ->
-            handler.decrementInvDepth()
-        }
+    private fun addIncrementButtons(
+        startX: Int,
+        startY: Int,
+        upAction: ButtonWidget.PressAction,
+        downAction: ButtonWidget.PressAction,
+        offsetOffset: Int = 0
+    ){
 
-        val transformedUpCoords = transformToGui(upBtnX, upBtnY)
+        val downY = startY + incrButtonHeight + incrButtonHeightOffset + offsetOffset
+
+        val transformedUpCoords = transformToGui(startX, startY)
         val upBtnX = transformedUpCoords.first
         val upBtnY = transformedUpCoords.second
 
-        val transformedDownCoords = transformToGui(downBtnX, downBtnY)
+        val transformedDownCoords = transformToGui(startX, downY)
         val downBtnX = transformedDownCoords.first
         val downBtnY = transformedDownCoords.second
 
-        val upBtn = ButtonWidget.builder(Text.of(""), upAction).position(upBtnX, upBtnY).build()
-        val downBtn = ButtonWidget.builder(Text.of(""), downAction).position(downBtnX, downBtnY).build()
+        val upBtn = IconButtonWidget.builder(upIcon, upAction)
+            .position(upBtnX, upBtnY)
+            .size(incrButtonWidth, incrButtonHeight)
+            .build()
+
+        val downBtn = IconButtonWidget.builder(downIcon, downAction)
+            .position(downBtnX, downBtnY)
+            .size(incrButtonWidth, incrButtonHeight)
+            .build()
+
+/*        val upBtn = ButtonWidget.builder(Text.of(upArrow), upAction)
+            .position(upBtnX, upBtnY)
+            .size(incrButtonWidth, incrButtonHeight)
+            .build()
+
+        val downBtn = ButtonWidget.builder(Text.of(downArrow), downAction)
+            .position(downBtnX, downBtnY)
+            .size(incrButtonWidth, incrButtonHeight)
+            .build()
+*/
 
         addDrawableChild(upBtn)
         addSelectableChild(upBtn)
@@ -125,6 +189,32 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         return Pair(transformedX, transformedY)
     }
 
+    private fun transformToGui(cords: Pair<Int, Int>): Pair<Int, Int> {
+        val guiX = (width - backgroundWidth) / 2
+        val guiY = (height - backgroundHeight) / 2
+        val transformedX = guiX + cords.first
+        val transformedY = guiY + cords.second
+        return Pair(transformedX, transformedY)
+    }
+
+    private fun getGridSlotPosition(slotId: Int): Pair<Int, Int> {
+        val index = slotId - 0
+        val j = index % 5 // column index
+        val i = index / 5 // row index
+        val x = 8 + j * 17
+        val y = 44 + i * 17
+        return Pair(x, y)
+    }
+
+    private fun drawBlockSlots(ctx: DrawContext){
+        val blockedSlots = handler.getBlockedSlots()
+        for(slot in blockedSlots){
+            val cords = transformToGui(getGridSlotPosition(slot))
+            val x = cords.first
+            val y = cords.second
+            ctx.drawTexture(blockedSlot.identifier, x, y, blockedSlot.u, blockedSlot.v, blockedSlot.textureWidth, blockedSlot.textureHeight)
+        }
+    }
 
     override fun drawBackground(context: DrawContext?, delta: Float, mouseX: Int, mouseY: Int) {
         RenderSystem.setShader(GameRenderer::getPositionProgram)
@@ -136,18 +226,25 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         context?.drawTexture(texture, x, y, 0, 0, backgroundWidth, backgroundHeight)
     }
 
+    private fun renderText(context: DrawContext?, text: String, x: Int, y: Int) {
+        val textCords = transformToGui(x, y)
+        context?.drawText(textRenderer, text, textCords.first, textCords.second, 0xFFFFFF, false)
+    }
+
+    private fun renderNum(context: DrawContext?, number: Int, x: Int, y: Int) {
+        val textCords = transformToGui(x, y)
+        context?.drawText(textRenderer, number.toString(), textCords.first, textCords.second, 0xFFFFFF, false)
+    }
+
     override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(context)
         super.render(context, mouseX, mouseY, delta)
-        val invDepth = handler.getInvDepth()
 
+        renderNum(context, handler.getInvDepth(), invDepthX, invDepthY)
         // Calculate the position of the text relative to the GUI
-
+        drawBlockSlots(context!!)
         // Draw the text
-        val textCords = transformToGui(invDepthX, invDepthY)
-        val textX = textCords.first
-        val textY = textCords.second
-        context?.drawText(textRenderer, invDepth.toString(), textX, textY, 0xFFFFFF, false)
+
         drawMouseoverTooltip(context, mouseX, mouseY)
     }
 }

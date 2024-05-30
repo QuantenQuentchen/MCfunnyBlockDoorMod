@@ -2,13 +2,13 @@ package funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions
 
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.text.Text
 
 class LimitedNumberFieldWidget(textRenderer: TextRenderer,
                                x: Int,
                                y: Int,
                                width: Int,
-                               height: Int
+                               height: Int,
+                               private val correctCharLambda: ((Int) -> Unit)? = null
 ) : TextFieldWidget(textRenderer, x, y, width, height, null) {
 
     var maxNumber: Int = 360
@@ -26,6 +26,7 @@ class LimitedNumberFieldWidget(textRenderer: TextRenderer,
 
             if (num != null && num in minNumber..maxNumber) {
                 number = num
+                correctCharLambda?.let { it(num) }
                 return super.charTyped(chr, modifiers)
             }
         }

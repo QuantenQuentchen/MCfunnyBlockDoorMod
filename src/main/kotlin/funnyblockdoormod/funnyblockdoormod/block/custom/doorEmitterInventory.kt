@@ -1,6 +1,7 @@
 package funnyblockdoormod.funnyblockdoormod.block.custom
 
 import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
+import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.InventoryDepthChange
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.inventory.InventoryChangedListener
@@ -34,8 +35,6 @@ class doorEmitterInventory(): Inventory{
         }
     }
 
-
-
     val inventory: Array<Array<Array<ItemStack?>>> = Array(25) { Array(5) { arrayOfNulls(5) } }
 
     private val middle = ((inventory[0].size + 1) / 2) -1
@@ -46,6 +45,7 @@ class doorEmitterInventory(): Inventory{
     private var state = 0
     private var layer = 0
     private val listeners = mutableListOf<WeakReference<InventoryChangedListener>>()
+    private val depthListeners = mutableListOf<WeakReference<InventoryDepthChange>>()
 
     var depth = 0
         set(value) {
@@ -56,6 +56,7 @@ class doorEmitterInventory(): Inventory{
             if (value >= inventory.size) {
                 field = inventory.size - 1
             }
+            depthListeners.forEach { it.get()?.onDepthChange(this.depth) }
         }
 
     fun addListener(listener: InventoryChangedListener) {
