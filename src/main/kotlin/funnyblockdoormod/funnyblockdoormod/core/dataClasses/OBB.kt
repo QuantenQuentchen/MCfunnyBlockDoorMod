@@ -21,30 +21,41 @@ data class OBB(
         const val SIZE_U = 5.0
         const val SIZE_V = 5.0
         const val LENGTH = 10.0
-        private val obbMap = WeakHashMap<String, OBB>()
+        private val obbMap = WeakHashMap<Int, OBB>()
 
-        private val emittingGridMap = WeakHashMap<String, BlockPos3DGrid>()
+        private val emittingGridMap = WeakHashMap<Int, BlockPos3DGrid>()
 
         private fun getRotatedOBB(angleX: Float, angleY: Float, angleZ: Float): OBB {
-            val rotation = "$angleX,$angleY,$angleZ"
-            obbMap[rotation]?.let { return it }
+            val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
+            obbMap[rotationCompInt]?.let { return it }
             val center = Point3D(0.0, 0.0, LENGTH/2).rotateX(angleX).rotateY(angleY).rotateZ(angleZ)
             val u = Vec3d(1.0, 0.0, 0.0).rotateX(angleX).rotateY(angleY).rotateZ(angleZ)
             val v = Vec3d(0.0, 1.0, 0.0).rotateX(angleX).rotateY(angleY).rotateZ(angleZ)
             val w = Vec3d(0.0, 0.0, 1.0).rotateX(angleX).rotateY(angleY).rotateZ(angleZ)
             val extents = Vec3d(SIZE_U / 2, SIZE_V / 2, LENGTH / 2)
             val rotatedObb = OBB(center + Point3D(0.0, 0.0, LENGTH/2), u, v, w, extents)
-            obbMap[rotation] = rotatedObb
+            obbMap[rotationCompInt] = rotatedObb
             return rotatedObb
         }
 
         fun getEmittingGrid(angleX: Float, angleY: Float, angleZ: Float): BlockPos3DGrid {
-            val rotation = "$angleX,$angleY,$angleZ"
-            emittingGridMap[rotation]?.let { return it }
+            val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
+            emittingGridMap[rotationCompInt]?.let { return it }
             val obb = getRotatedOBB(angleX, angleY, angleZ)
             val grid = obb.voxelize()
-            emittingGridMap[rotation] = grid
+            emittingGridMap[rotationCompInt] = grid
             return grid
+        }
+
+        private fun encodeAngles(angleX: Int, angleY: Int, angleZ: Int): Int {
+            return (angleX shl 16) or (angleY shl 8) or angleZ
+        }
+
+        private fun decodeAngles(encoded: Int): Triple<Int, Int, Int> {
+            val angleX = (encoded shr 16) and 0xFF
+            val angleY = (encoded shr 8) and 0xFF
+            val angleZ = encoded and 0xFF
+            return Triple(angleX, angleY, angleZ)
         }
 
     }
