@@ -183,6 +183,10 @@ class doorEmitterInventory(): Inventory{
         return true
     }
 
+    fun getStack(x: Int, y: Int, z: Int): ItemStack {
+        return inventory.getOrNull(z)?.getOrNull(y)?.getOrNull(x) ?: ItemStack.EMPTY
+    }
+
     override fun getStack(slot: Int): ItemStack {
         val cords = convertTo3D(slot)
         val x = cords.first

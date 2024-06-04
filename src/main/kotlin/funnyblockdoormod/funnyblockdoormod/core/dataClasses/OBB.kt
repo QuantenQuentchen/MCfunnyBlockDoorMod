@@ -20,7 +20,7 @@ data class OBB(
         const val MAX_OBB_SIZE = 25
         const val SIZE_U = 5.0
         const val SIZE_V = 5.0
-        const val LENGTH = 10.0
+        const val LENGTH = 25.0
         private val obbMap = WeakHashMap<Int, OBB>()
 
         private val emittingGridMap = WeakHashMap<Int, BlockPos3DGrid>()
@@ -90,7 +90,7 @@ data class OBB(
 
     fun voxelize(): BlockPos3DGrid {
         //TODO: Optimize, add planar intersection test, and figure multithreading out
-        val maxSize = MAX_OBB_SIZE
+        val maxSize = MAX_OBB_SIZE + 1
         val xRange = -maxSize..maxSize //step 2
         val yRange = -maxSize..maxSize //step 2
         val zRange = -maxSize..maxSize //step 2
@@ -99,7 +99,7 @@ data class OBB(
         val vDim = (SIZE_V *2+1).toInt()
         val lenDim = (LENGTH *2+1).toInt()
 
-        val blockPosArray = BlockPos3DGrid(uDim, vDim, lenDim)
+        val blockPosArray = BlockPos3DGrid(MAX_OBB_SIZE, MAX_OBB_SIZE, MAX_OBB_SIZE)
 
         var xIdx = 0
         for (x in xRange) {

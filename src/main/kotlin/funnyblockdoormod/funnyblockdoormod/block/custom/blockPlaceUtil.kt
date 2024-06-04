@@ -13,7 +13,8 @@ object blockPlaceUtil {
     private var noBreakList: funnyDoorPersistantState? = null
 
     private fun posIsPlaceable(pos: BlockPos, world: World): Boolean {
-        return world.isAir(pos)
+        return true//world.isAir(pos)
+        //world.getBlockState(pos).block.isAir(world.getBlockState(pos), world, pos)
     }
 
 

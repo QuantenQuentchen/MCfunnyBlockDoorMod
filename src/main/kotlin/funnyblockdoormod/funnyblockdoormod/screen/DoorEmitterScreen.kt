@@ -2,12 +2,15 @@ package funnyblockdoormod.funnyblockdoormod.screen
 
 import com.mojang.blaze3d.systems.RenderSystem
 import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
+import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.teamRebornEnergyScreen
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.ButtonIcon
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IconButtonWidget
+import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IconToggleWidget
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.LimitedNumberFieldWidget
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.client.render.GameRenderer
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Text
@@ -62,29 +65,47 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
     private val inputWidth = 25
     private val inputHeight = 10
 
-    private val upIcon = ButtonIcon(
+    private val TabsRowX = 176
+    private val TabsRowY = 3
+
+    private val TabsContentX = TabsRowX + 29
+    private val TabsContentY = TabsRowY - 3
+
+    fun getTabsRowX(): Int {
+        return x + TabsRowX
+    }
+
+    fun getTabsRowY(): Int {
+        return y + TabsRowY
+    }
+
+    fun getTabsContentX(): Int {
+        return x + TabsContentX
+    }
+
+    fun getTabsContentY(): Int {
+        return y + TabsContentY
+    }
+
+    private val upIcon = ButtonIcon.getButtonIcon(
         texture,
         176, 17,
         9, 5,
-        0, 9,
-        5
     )
 
-    private val downIcon = ButtonIcon(
+    private val downIcon = ButtonIcon.getButtonIcon(
         texture,
         176, 22,
         9, 5,
-        0, 9,
-        5
     )
 
-    private val blockedSlot = ButtonIcon(
+    private val blockedSlot = ButtonIcon.getButtonIcon(
         texture,
         176, 0,
         16, 16,
-        0, 16,
-        16
     )
+
+    private val energysubScreen = teamRebornEnergyScreen(this, handler)
 
     override fun init() {
         super.init()
@@ -98,8 +119,22 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         addIncrementButtons(xAngleIncrX, xAngleIncrY, { handler.decrementXAngle() }, { handler.incrementXAngle() })
         addIncrementButtons(yAngleIncrX, yAngleIncrY, { handler.decrementYAngle() }, { handler.incrementYAngle() })
         addIncrementButtons(zAngleIncrX, zAngleIncrY, { handler.decrementZAngle() }, { handler.incrementZAngle() })
+
+        energysubScreen.registerEnergyScreenTab(getTabsRowX(), getTabsRowY())
     }
 
+
+    fun addButton(widget: IconButtonWidget): IconButtonWidget {
+        addDrawableChild(widget)
+        addSelectableChild(widget)
+        return widget
+    }
+
+    fun addButton(widget: IconToggleWidget): IconToggleWidget {
+        addDrawableChild(widget)
+        addSelectableChild(widget)
+        return widget
+    }
 
     private fun addInputFields() {
         val xCords = transformToGui(xAngleInputX, xAngleInputY)
@@ -159,17 +194,6 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
             .size(incrButtonWidth, incrButtonHeight)
             .build()
 
-/*        val upBtn = ButtonWidget.builder(Text.of(upArrow), upAction)
-            .position(upBtnX, upBtnY)
-            .size(incrButtonWidth, incrButtonHeight)
-            .build()
-
-        val downBtn = ButtonWidget.builder(Text.of(downArrow), downAction)
-            .position(downBtnX, downBtnY)
-            .size(incrButtonWidth, incrButtonHeight)
-            .build()
-*/
-
         addDrawableChild(upBtn)
         addSelectableChild(upBtn)
 
@@ -179,6 +203,15 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
 
     init {
         backgroundHeight = 201
+        //backgroundWidth = 190
+    }
+
+    fun getX(): Int {
+        return x
+    }
+
+    fun getY(): Int {
+        return y
     }
 
     private fun transformToGui(x: Int, y: Int): Pair<Int, Int> {
@@ -238,8 +271,11 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
 
     override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(context)
-        super.render(context, mouseX, mouseY, delta)
 
+        if (context != null) {
+            energysubScreen.drawEnergyScreen(context)
+        }
+        super.render(context, mouseX, mouseY, delta)
         renderNum(context, handler.getInvDepth(), invDepthX, invDepthY)
         // Calculate the position of the text relative to the GUI
         drawBlockSlots(context!!)

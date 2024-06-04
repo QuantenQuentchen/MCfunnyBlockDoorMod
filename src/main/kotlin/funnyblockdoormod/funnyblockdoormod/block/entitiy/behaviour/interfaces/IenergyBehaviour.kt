@@ -21,6 +21,6 @@ interface IenergyBehaviour {
 
     fun afterTypeCreation()
 
-    fun getEnergy(): Long?
+    fun getEnergy(): Long
 
 }

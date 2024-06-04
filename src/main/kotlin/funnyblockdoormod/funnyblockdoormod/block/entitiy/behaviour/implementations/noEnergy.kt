@@ -41,7 +41,7 @@ class noEnergy(blockEntity: BlockEntity): IenergyBehaviour {
         return
     }
 
-    override fun getEnergy(): Long? {
-        return null
+    override fun getEnergy(): Long {
+        return -1
     }
 }

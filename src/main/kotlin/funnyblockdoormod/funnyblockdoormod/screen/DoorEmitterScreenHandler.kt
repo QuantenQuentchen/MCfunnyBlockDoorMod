@@ -35,7 +35,7 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
     private val dynamicSlots: MutableList<DoorEmitterInventorySlot> = mutableListOf()
 
     constructor(syncId: Int, inventory: PlayerInventory, buf: PacketByteBuf):
-            this(syncId, inventory, inventory.player.world.getBlockEntity(buf.readBlockPos()), ArrayPropertyDelegate(2))
+            this(syncId, inventory, inventory.player.world.getBlockEntity(buf.readBlockPos()), ArrayPropertyDelegate(3))
 
     constructor(syncId: Int, playerInventory: PlayerInventory, blockEntity: BlockEntity?, propertyDelegate: PropertyDelegate)
             : super(ModScreenHandlers.DOOREMITTERSCREENHANDLER, syncId) {
@@ -91,7 +91,6 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
     }
 
 
-
     private fun addMainSlots(playerInventory: doorEmitterInventory){
         addGridSlots(playerInventory, 0, 44, 17)
     }
@@ -118,6 +117,10 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
             return false
         }
         return super.canInsertIntoSlot(slot)
+    }
+
+    fun getEnergyStorage(): Int {
+        return propertyDelegate.get(2)
     }
 
     override fun quickMove(player: PlayerEntity?, slot: Int): ItemStack {
@@ -259,7 +262,7 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
     }
 
     override fun onInventoryChanged(sender: Inventory?) {
-        FunnyBlockDoorMod.logger.info("Inventory change detected for door emitter block entity")
+        //FunnyBlockDoorMod.logger.info("Inventory change detected for door emitter block entity")
         sendContentUpdates()
     }
 

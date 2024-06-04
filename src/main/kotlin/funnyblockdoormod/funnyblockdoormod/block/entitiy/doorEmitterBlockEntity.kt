@@ -16,6 +16,7 @@ import funnyblockdoormod.funnyblockdoormod.screen.DoorEmitterScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
+import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -56,6 +57,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
                 return when (index) {
                     0 -> invDepth
                     1 -> encodedSlotStates
+                    2 -> energyBehaviour.getEnergy().toInt()
                     else -> 0
                 }
             }
@@ -68,11 +70,15 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
             }
 
             override fun size(): Int {
-                return 2
+                return 3
             }
         }
     }
     //Behaviours
+
+    fun setEnergyStoragePropDel(value: Int){
+        propertyDelegate.set(2, value)
+    }
 
     var energyBehaviour: IenergyBehaviour = defaultEnergyBehaviourFactory.create(this)
 
@@ -115,9 +121,9 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private var redstoneActivationBehaviour = false
 
     private var lastTickTime = System.currentTimeMillis()
-    private val currentXAngle: Float = 0f
-    private val currentYAngle: Float = 0f
-    private val currentZAngle: Float = 0f
+    private var currentXAngle: Float = 90f
+    private var currentYAngle: Float = 0f
+    private var currentZAngle: Float = 0f
 
     private var currentEmittingGrid = OBB.getEmittingGrid(currentXAngle, currentYAngle, currentZAngle)
 
@@ -131,6 +137,13 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
     fun setCharged(isCharged: Boolean) {
         this.isCharged = isCharged
+        if(isCharged){
+            isEmitting = true
+            isRetracting = false
+        } else {
+            isRetracting = true
+            isEmitting = false
+        }
     }
 
     override fun getDisplayName(): Text {
@@ -199,42 +212,95 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
         this.propertyDelegate.set(1, encodeBlockedStates(blockedSlots))
     }
 
+    private var ticks = 0
+    private var switch = false
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if(world.isClient) return
-        if(!canOperate()) return
+        /*if(!canOperate()) {
+            decrementBlockDelay()
+            return
+        }
         if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return
 
-        energyBehaviour.consume(energyConsumptionPerBlock)
+
         val currentTickTime = System.currentTimeMillis()
-        val operationMultiplier = (currentTickTime - lastTickTime) / 20
+        val operationMultiplier = (currentTickTime - lastTickTime) / 20*/
 
         //Tick Logic
 
-        if(isEmitting){
+
+
+       /* if(isEmitting){
+            energyBehaviour.consume(energyConsumptionPerBlock)
             emittTick(world, pos)
         }
 
         if(isRetracting){
-            retractTick(world, pos)
+            //energyBehaviour.consume(energyConsumptionPerBlock)
+            //retractTick(world, pos)
         }
-
+*/
         //End Tick Logic
-        decrementBlockDelay()
-        lastTickTime = currentTickTime
+        ticks++
+        if(ticks >= 50 && switch){
+            world.players.forEach { player -> player.sendMessage(Text.of("Emitting x:$currentXAngle, y:$currentYAngle, z:$currentZAngle")) }
+            emittTick(world, pos)
+            switch = false
+            ticks = 0
+        }
+        if(ticks >= 50 && !switch){
+            world.players.forEach { player -> player.sendMessage(Text.of("Retracting x:$currentXAngle, y:$currentYAngle, z:$currentZAngle")) }
+            testretractTikc(world, pos)
+            if(currentXAngle >= 180){
+                currentXAngle = 0f
+                currentYAngle += 1
+            }
+            if(currentYAngle >= 180){
+                currentYAngle = 0f
+                currentZAngle += 1
+            }
+            if(currentZAngle >= 180) {
+                world.players.forEach() { player -> player.sendMessage(Text.of("Test Complete")) }
+            }
+            currentXAngle += 1
+            currentEmittingGrid = OBB.getEmittingGrid(currentXAngle, currentYAngle, currentZAngle)
+            switch = true
+            ticks = 0
+        }
+        //lastTickTime = currentTickTime
     }
 
     private fun emittTick(world: World, emitterPos: BlockPos){
-        if(inventory.iterator().hasNext() && currentEmittingGrid.iterator().hasNext()){
-            val item = inventory.iterator().next()
-            val pos = currentEmittingGrid.iterator().next()
-            if(item != null && pos != null){
-                //place block
-                val block = getBlockStateFromItemStack(item)
-                if(block != null){
-                    blockPlaceUtil.placeBlock(pos.add(emitterPos), world, block, false)
+
+        for(z in 0..24){
+            for(y in 0..24){
+                for(x in 0..24){
+                    val pos = currentEmittingGrid.getBlock(x, y, z)
+                    if(pos != null){
+                        //val item = inventory.getStack(x, y, z)
+                        //if(item != null){
+                            val block = Blocks.AMETHYST_BLOCK.defaultState//getBlockStateFromItemStack(item)
+                            if(block != null){
+                                blockPlaceUtil.placeBlock(pos.add(emitterPos), world, block, false)
+                            }
+                        //}
+                    }
                 }
             }
         }
+        isEmitting = false
+    }
+
+    private fun testretractTikc(world: World, emitterPos: BlockPos){
+        for(z in -24..24){
+            for(y in -24..24){
+                for(x in -24..24){
+                    if(x == 0 && y == 0 && z == 0) continue
+                    world.setBlockState(BlockPos(x, y, z).add(emitterPos), Blocks.AIR.defaultState)
+                }
+            }
+        }
+        isRetracting = false
     }
 
     private fun retractTick(world: World, emitterPos: BlockPos){
@@ -247,6 +313,9 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
                     blockPlaceUtil.removeBlock(pos.add(emitterPos), world, block, false)
                 }
             }
+        } else{
+            //reset
+            isRetracting = false
         }
     }
 

@@ -1,18 +1,29 @@
 package funnyblockdoormod.funnyblockdoormod.core.containerClasses
 
-import net.minecraft.item.ItemStack
+import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
+import funnyblockdoormod.funnyblockdoormod.core.dataClasses.OBB.Companion.SIZE_U
+import funnyblockdoormod.funnyblockdoormod.core.dataClasses.OBB.Companion.SIZE_V
 import net.minecraft.util.math.BlockPos
 
-class BlockPos3DGrid(x: Int, y: Int, z: Int) {
+class BlockPos3DGrid(sizeX: Int, sizeY: Int, sizeZ: Int) {
 
-    val grid: Array<Array<Array<BlockPos?>>> = Array(x) { Array(y) { arrayOfNulls(z) } }
+    val grid: Array<Array<Array<BlockPos?>>> = Array(sizeX) { Array(sizeY) { arrayOfNulls(sizeZ) } }
 
     fun getBlock(x: Int, y: Int, z: Int): BlockPos? {
-        return grid[x][y][z]
+        return try {
+            grid[x][y][z]
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun setBlock(x: Int, y: Int, z: Int, value: BlockPos?) {
-        grid[x][y][z] = value
+        try {
+            grid[x][y][z] = value
+        } catch (e: Exception) {
+            FunnyBlockDoorMod.logger.error("Error setting block at $x, $y, $z in grid of size ${grid.size}, ${grid[0].size}, ${grid[0][0].size}")
+        }
+        //grid[x][y][z] = value
     }
 
     private val middle = ((grid[0].size + 1) / 2) -1
@@ -82,5 +93,16 @@ class BlockPos3DGrid(x: Int, y: Int, z: Int) {
             }
         }
     }
-    
+
+    fun getBlock1D(index: Int): BlockPos? {
+        val totalElements = grid.size * grid[0].size * grid[0][0].size
+        if (index >= totalElements) {
+            return null
+        }
+        val z = index / (grid[0].size * grid[0][0].size)
+        val y = (index - z * grid[0].size * grid[0][0].size) / grid[0].size
+        val x = index - y * grid[0].size - z * grid[0].size * grid[0][0].size
+        return getBlock(x, y, z)
+    }
+
 }

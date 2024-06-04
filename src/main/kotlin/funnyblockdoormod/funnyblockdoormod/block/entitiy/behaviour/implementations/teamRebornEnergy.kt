@@ -1,5 +1,6 @@
 package funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations
 
+import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IenergyBehaviour
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IenergyBehaviourFactory
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.doorEmitterBlockEntity
@@ -27,8 +28,9 @@ class teamRebornEnergy(private val blockEntity: BlockEntity): IenergyBehaviour {
     }
 
     override val energyStorage: SimpleEnergyStorage by lazy {
-        object : SimpleEnergyStorage(1000, 1000, 1000) {
+        object : SimpleEnergyStorage(1000, 10, 10) {
             override fun onFinalCommit() {
+                (blockEntity as doorEmitterBlockEntity).setEnergyStoragePropDel(amount.toInt())
                 blockEntity.markDirty()
             }
         }
@@ -61,7 +63,7 @@ class teamRebornEnergy(private val blockEntity: BlockEntity): IenergyBehaviour {
         return true
     }
 
-    override fun getEnergy(): Long? {
+    override fun getEnergy(): Long {
         return energyStorage.amount
     }
 }
