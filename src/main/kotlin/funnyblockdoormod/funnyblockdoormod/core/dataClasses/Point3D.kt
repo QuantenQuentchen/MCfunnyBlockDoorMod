@@ -5,6 +5,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 data class Point3D(val x: Double, val y: Double, val z: Double) {
+
+    constructor(vec: Vec3d): this(vec.x, vec.y, vec.z)
+
     fun rotateX(angle: Float): Point3D {
         val rad = Math.toRadians(angle.toDouble())
         val cos = cos(rad)
@@ -49,4 +52,9 @@ data class Point3D(val x: Double, val y: Double, val z: Double) {
             z = z
         )
     }
+
+    fun toVec3d(): Vec3d {
+        return Vec3d(x, y, z)
+    }
+
 }

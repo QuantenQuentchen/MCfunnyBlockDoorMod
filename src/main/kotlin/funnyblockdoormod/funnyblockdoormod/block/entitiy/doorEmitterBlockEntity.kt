@@ -121,11 +121,12 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private var redstoneActivationBehaviour = false
 
     private var lastTickTime = System.currentTimeMillis()
-    private var currentXAngle: Float = 90f
+    private var currentXAngle: Float = 0f
     private var currentYAngle: Float = 0f
     private var currentZAngle: Float = 0f
 
     private var currentEmittingGrid = OBB.getEmittingGrid(currentXAngle, currentYAngle, currentZAngle)
+    private var currentOBB = OBB.getRotatedOBB(currentXAngle, currentYAngle, currentZAngle)
 
     private var energyConsumptionPerBlockBase = 10
 
@@ -251,10 +252,10 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
         if(ticks >= 50 && !switch){
             world.players.forEach { player -> player.sendMessage(Text.of("Retracting x:$currentXAngle, y:$currentYAngle, z:$currentZAngle")) }
             testretractTikc(world, pos)
-            if(currentXAngle >= 180){
+           /* if(currentXAngle >= 180){
                 currentXAngle = 0f
                 currentYAngle += 1
-            }
+            }*/
             if(currentYAngle >= 180){
                 currentYAngle = 0f
                 currentZAngle += 1
@@ -262,8 +263,10 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
             if(currentZAngle >= 180) {
                 world.players.forEach() { player -> player.sendMessage(Text.of("Test Complete")) }
             }
-            currentXAngle += 1
+            currentYAngle += 1
             currentEmittingGrid = OBB.getEmittingGrid(currentXAngle, currentYAngle, currentZAngle)
+            currentOBB = OBB.getRotatedOBB(currentXAngle, currentYAngle, currentZAngle)
+            currentOBB.debugDrawOBB(world, currentOBB, pos)
             switch = true
             ticks = 0
         }

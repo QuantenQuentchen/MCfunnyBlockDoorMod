@@ -2,10 +2,14 @@ package funnyblockdoormod.funnyblockdoormod.core.dataClasses
 
 
 import funnyblockdoormod.funnyblockdoormod.core.containerClasses.BlockPos3DGrid
+import net.minecraft.block.Blocks
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
+import net.minecraft.world.World
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 data class OBB(
@@ -21,22 +25,79 @@ data class OBB(
         const val SIZE_U = 5.0
         const val SIZE_V = 5.0
         const val LENGTH = 25.0
+        private val uVec = Vec3d(1.0, 0.0, 0.0)
+        private val vVec = Vec3d(0.0, 1.0, 0.0)
+        private val wVec = Vec3d(0.0, 0.0, 1.0)
+        private val center = Point3D(0.0, 0.0, LENGTH / 2)
+        private val extents = Vec3d(SIZE_U / 2, SIZE_V / 2, LENGTH / 2)
         private val obbMap = WeakHashMap<Int, OBB>()
 
         private val emittingGridMap = WeakHashMap<Int, BlockPos3DGrid>()
 
-        private fun getRotatedOBB(angleX: Float, angleY: Float, angleZ: Float): OBB {
+        private fun rotate(angleX: Float, angleY: Float, angleZ: Float, vec: Vec3d): Vec3d {
+            // Convert angles to radians
+            val radX = Math.toRadians(angleX.toDouble())
+            val radY = Math.toRadians(angleY.toDouble())
+            val radZ = Math.toRadians(angleZ.toDouble())
+
+            // Calculate cosine and sine of angles
+            val cosX = cos(radX)
+            val sinX = sin(radX)
+            val cosY = cos(radY)
+            val sinY = sin(radY)
+            val cosZ = cos(radZ)
+            val sinZ = sin(radZ)
+
+            // Apply rotation around X-axis
+            val newX1 = vec.x
+            val newY1 = vec.y * cosX - vec.z * sinX
+            val newZ1 = vec.y * sinX + vec.z * cosX
+
+            // Apply rotation around Y-axis
+            val newX2 = newX1 * cosY + newZ1 * sinY
+            val newY2 = newY1
+            val newZ2 = -newX1 * sinY + newZ1 * cosY
+
+            // Apply rotation around Z-axis
+            val newX3 = newX2 * cosZ - newY2 * sinZ
+            val newY3 = newX2 * sinZ + newY2 * cosZ
+            val newZ3 = newZ2
+
+            return Vec3d(newX3, newY3, newZ3)
+        }
+
+        fun getRotatedOBB(angleX: Float, angleY: Float, angleZ: Float): OBB {
             val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
             obbMap[rotationCompInt]?.let { return it }
-            val center = Point3D(0.0, 0.0, LENGTH/2).rotateX(angleX).rotateY(angleY).rotateZ(angleZ)
-            val u = Vec3d(1.0, 0.0, 0.0).rotateX(angleX).rotateY(angleY).rotateZ(angleZ)
-            val v = Vec3d(0.0, 1.0, 0.0).rotateX(angleX).rotateY(angleY).rotateZ(angleZ)
-            val w = Vec3d(0.0, 0.0, 1.0).rotateX(angleX).rotateY(angleY).rotateZ(angleZ)
-            val extents = Vec3d(SIZE_U / 2, SIZE_V / 2, LENGTH / 2)
-            val rotatedObb = OBB(center + Point3D(0.0, 0.0, LENGTH/2), u, v, w, extents)
+
+            val rotatedCenter = rotate(angleX, angleY, angleZ, center.toVec3d())
+
+            val rotatedU = rotate(angleX, angleY, angleZ, uVec)
+            val rotatedV = rotate(angleX, angleY, angleZ, vVec)
+            val rotatedW = rotate(angleX, angleY, angleZ, wVec)
+
+            val rotatedObb = OBB(Point3D(rotatedCenter), rotatedU, rotatedV, rotatedW, extents)
+
             obbMap[rotationCompInt] = rotatedObb
             return rotatedObb
         }
+
+/*        private fun getRotatedOBBp(angleX: Float, angleY: Float, angleZ: Float): OBB {
+            val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
+            obbMap[rotationCompInt]?.let { return it }
+
+            // Rotate the basis vectors
+            val newU = rotate(angleX, angleY, angleZ, uVec)
+            val newV = rotate(angleX, angleY, angleZ, vVec)
+            val newW = rotate(angleX, angleY, angleZ, wVec)
+
+            // The center point is always at the origin
+            val newCenter = Point3D(0.0, 0.0, 0.0)
+
+            val rotatedObb = OBB(newCenter, newU, newV, newW, extents)
+            obbMap[rotationCompInt] = rotatedObb
+            return rotatedObb
+        }*/
 
         fun getEmittingGrid(angleX: Float, angleY: Float, angleZ: Float): BlockPos3DGrid {
             val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
@@ -59,33 +120,36 @@ data class OBB(
         }
 
     }
-    /*
-    private suspend fun rotate(angleX: Float, angleY: Float, angleZ: Float) = coroutineScope {
-        // Translate to origin
-        val translatedCenter = center - Point3D(extents.x, extents.y, extents.z)
-
-        val jobs = listOf(
-            async(Dispatchers.Default) { translatedCenter.rotateX(angleX).rotateY(angleY).rotateZ(angleZ) },
-            async(Dispatchers.Default) { u.rotateX(angleX).rotateY(angleY).rotateZ(angleZ) },
-            async(Dispatchers.Default) { v.rotateX(angleX).rotateY(angleY).rotateZ(angleZ) },
-            async(Dispatchers.Default) { w.rotateX(angleX).rotateY(angleY).rotateZ(angleZ) }
-        )
-
-        val results = jobs.awaitAll()
-
-        // Translate back to original position
-        center = (results[0] as Point3D) + Point3D(extents.x, extents.y, extents.z)
-        u = results[1] as Vec3d
-        v = results[2] as Vec3d
-        w = results[3] as Vec3d
-    }
-*/
     private fun contains(point: Point3D): Boolean {
         val localPoint = point - center
         val xExtent = abs(localPoint.dot(u))
         val yExtent = abs(localPoint.dot(v))
         val zExtent = abs(localPoint.dot(w))
         return xExtent <= extents.x && yExtent <= extents.y && zExtent <= extents.z
+    }
+
+    fun debugDrawOBB(world: World, obb: OBB, debugOffset: BlockPos) {
+        // Calculate the corners of the OBB
+        val corners = arrayOf(
+            obb.center + (obb.u * obb.extents.x) + (obb.v * obb.extents.y) + (obb.w * obb.extents.z),
+            obb.center - (obb.u * obb.extents.x) + (obb.v * obb.extents.y) + (obb.w * obb.extents.z),
+            obb.center + (obb.u * obb.extents.x) - (obb.v * obb.extents.y) + (obb.w * obb.extents.z),
+            obb.center - (obb.u * obb.extents.x) - (obb.v * obb.extents.y) + (obb.w * obb.extents.z),
+            obb.center + (obb.u * obb.extents.x) + (obb.v * obb.extents.y) - (obb.w * obb.extents.z),
+            obb.center - (obb.u * obb.extents.x) + (obb.v * obb.extents.y) - (obb.w * obb.extents.z),
+            obb.center + (obb.u * obb.extents.x) - (obb.v * obb.extents.y) - (obb.w * obb.extents.z),
+            obb.center - (obb.u * obb.extents.x) - (obb.v * obb.extents.y) - (obb.w * obb.extents.z)
+        )
+
+        // Draw a block at each corner
+        for (corner in corners) {
+            val blockPos = BlockPos(corner.x.toInt(), corner.y.toInt(), corner.z.toInt())
+            world.setBlockState(debugOffset.add(blockPos), Blocks.GLOWSTONE.defaultState)
+        }
+    }
+
+    operator fun Vec3d.times(scalar: Double): Point3D {
+        return Point3D(this.x * scalar, this.y * scalar, this.z * scalar)
     }
 
     fun voxelize(): BlockPos3DGrid {
@@ -133,3 +197,5 @@ data class OBB(
     }
 
 }
+
+
