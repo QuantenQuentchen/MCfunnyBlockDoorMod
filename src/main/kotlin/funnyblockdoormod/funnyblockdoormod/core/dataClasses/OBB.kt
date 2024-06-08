@@ -1,15 +1,15 @@
 package funnyblockdoormod.funnyblockdoormod.core.dataClasses
 
 
+import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
+import funnyblockdoormod.funnyblockdoormod.core.containerClasses.BlockBundle
 import funnyblockdoormod.funnyblockdoormod.core.containerClasses.BlockPos3DGrid
 import net.minecraft.block.Blocks
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import java.util.*
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 
 
 data class OBB(
@@ -33,6 +33,8 @@ data class OBB(
         private val obbMap = WeakHashMap<Int, OBB>()
 
         private val emittingGridMap = WeakHashMap<Int, BlockPos3DGrid>()
+
+        //TODO: ensure it's always 5 blocks wide and 25 blocks long, with every rotation
 
         private fun rotate(angleX: Float, angleY: Float, angleZ: Float, vec: Vec3d): Vec3d {
             // Convert angles to radians
@@ -81,23 +83,6 @@ data class OBB(
             obbMap[rotationCompInt] = rotatedObb
             return rotatedObb
         }
-
-/*        private fun getRotatedOBBp(angleX: Float, angleY: Float, angleZ: Float): OBB {
-            val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
-            obbMap[rotationCompInt]?.let { return it }
-
-            // Rotate the basis vectors
-            val newU = rotate(angleX, angleY, angleZ, uVec)
-            val newV = rotate(angleX, angleY, angleZ, vVec)
-            val newW = rotate(angleX, angleY, angleZ, wVec)
-
-            // The center point is always at the origin
-            val newCenter = Point3D(0.0, 0.0, 0.0)
-
-            val rotatedObb = OBB(newCenter, newU, newV, newW, extents)
-            obbMap[rotationCompInt] = rotatedObb
-            return rotatedObb
-        }*/
 
         fun getEmittingGrid(angleX: Float, angleY: Float, angleZ: Float): BlockPos3DGrid {
             val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
@@ -152,16 +137,30 @@ data class OBB(
         return Point3D(this.x * scalar, this.y * scalar, this.z * scalar)
     }
 
+    private fun getLocalCoordinatesInOBB(point: Point3D): Vec3d {
+        // Subtract the position of the OBB from the point to get the relative position
+        val relativePoint = point - this.center.toVec3d()
+
+        // Project the relative point onto the u, v, and w vectors
+        val uCoord = relativePoint.dotProduct(this.u) / this.u.lengthSquared()
+        val vCoord = relativePoint.dotProduct(this.v) / this.v.lengthSquared()
+        val wCoord = relativePoint.dotProduct(this.w) / this.w.lengthSquared()
+
+        // Return the local coordinates
+        return Vec3d(uCoord + SIZE_U / 2, vCoord + SIZE_V / 2, wCoord + LENGTH / 2)
+    }
+
     fun voxelize(): BlockPos3DGrid {
         //TODO: Optimize, add planar intersection test, and figure multithreading out
         val maxSize = MAX_OBB_SIZE + 1
-        val xRange = -maxSize..maxSize //step 2
-        val yRange = -maxSize..maxSize //step 2
-        val zRange = -maxSize..maxSize //step 2
+        val xRange = -maxSize..maxSize
+        val yRange = -maxSize..maxSize
+        val zRange = -maxSize..maxSize
 
         val uDim = (SIZE_U *2+1).toInt()
         val vDim = (SIZE_V *2+1).toInt()
         val lenDim = (LENGTH *2+1).toInt()
+
 
         val blockPosArray = BlockPos3DGrid(MAX_OBB_SIZE, MAX_OBB_SIZE, MAX_OBB_SIZE)
 
@@ -177,11 +176,12 @@ data class OBB(
                     if (contains(point)) {
                         foundSomeY = true
                         zIdx++
-                        if(x == 0 && y == 0 && z == 0){
+/*                        if(x == 0 && y == 0 && z == 0){
                             blockPosArray.setBlock(xIdx, yIdx, zIdx, null)
                             continue
-                        }
-                        blockPosArray.setBlock(xIdx, yIdx, zIdx, BlockPos(x, y, z))
+                        }*/
+                        val norm = getLocalCoordinatesInOBB(point)
+                        blockPosArray.setBlock(BlockBundle(norm, BlockPos(x, y, z)))
                     }
                 }
                 if (foundSomeY) {

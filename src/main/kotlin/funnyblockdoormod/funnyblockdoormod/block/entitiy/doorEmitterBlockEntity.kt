@@ -32,6 +32,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
 
@@ -217,6 +218,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private var switch = false
     fun tick(world: World, pos: BlockPos, state: BlockState) {
         if(world.isClient) return
+        if(!world.isChunkLoaded(pos)) return
         /*if(!canOperate()) {
             decrementBlockDelay()
             return
@@ -275,14 +277,110 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
     private fun emittTick(world: World, emitterPos: BlockPos){
 
-        for(z in 0..24){
+        val testBlocks: MutableList<BlockState> = mutableListOf(
+            Blocks.AMETHYST_BLOCK.defaultState,
+            Blocks.DIAMOND_BLOCK.defaultState,
+            Blocks.EMERALD_BLOCK.defaultState,
+            Blocks.GOLD_BLOCK.defaultState,
+            Blocks.IRON_BLOCK.defaultState,
+            Blocks.LAPIS_BLOCK.defaultState,
+            Blocks.REDSTONE_BLOCK.defaultState,
+            Blocks.COAL_BLOCK.defaultState,
+            Blocks.QUARTZ_BLOCK.defaultState,
+            Blocks.NETHERITE_BLOCK.defaultState,
+            Blocks.BONE_BLOCK.defaultState,
+            Blocks.BRICKS.defaultState,
+            Blocks.ACACIA_LEAVES.defaultState,
+            Blocks.ACACIA_LOG.defaultState,
+            Blocks.ACACIA_PLANKS.defaultState,
+            Blocks.ACACIA_SLAB.defaultState,
+            Blocks.ACACIA_STAIRS.defaultState,
+            Blocks.ACACIA_TRAPDOOR.defaultState,
+            Blocks.JUKEBOX.defaultState,
+            Blocks.BOOKSHELF.defaultState,
+            Blocks.CRAFTING_TABLE.defaultState,
+            Blocks.FURNACE.defaultState,
+            Blocks.LOOM.defaultState,
+            Blocks.SMOKER.defaultState,
+            Blocks.BLAST_FURNACE.defaultState,
+            Blocks.CARTOGRAPHY_TABLE.defaultState,
+            Blocks.FLETCHING_TABLE.defaultState,
+            Blocks.SMITHING_TABLE.defaultState,
+            Blocks.STONECUTTER.defaultState,
+            Blocks.BREWING_STAND.defaultState,
+            Blocks.ENCHANTING_TABLE.defaultState,
+            Blocks.ANVIL.defaultState,
+            Blocks.CHIPPED_ANVIL.defaultState,
+            Blocks.DAMAGED_ANVIL.defaultState,
+            Blocks.GRINDSTONE.defaultState,
+            Blocks.BELL.defaultState,
+            Blocks.CAMPFIRE.defaultState,
+            Blocks.SOUL_CAMPFIRE.defaultState,
+            Blocks.LANTERN.defaultState,
+            Blocks.SOUL_LANTERN.defaultState,
+            Blocks.TORCH.defaultState,
+            Blocks.SOUL_TORCH.defaultState,
+            Blocks.WALL_TORCH.defaultState,
+            Blocks.SOUL_WALL_TORCH.defaultState,
+            Blocks.END_ROD.defaultState,
+            Blocks.REDSTONE_LAMP.defaultState,
+        )
+
+        //val blockPosToBlockStateList = currentOBB.orderBlocksByOBBRotation()
+
+/*        for ((blockPos, blockState) in blockPosToBlockStateList) {
+            // You can now access each BlockPos and BlockState
+            // For example, to print them:
+            world.setBlockState(blockPos.add(emitterPos), blockState)
+            //println("BlockPos: $blockPos, BlockState: $blockState")
+        }*/
+
+/*        var origin = Vec3d(emitterPos.x.toDouble(), emitterPos.y.toDouble(), emitterPos.z.toDouble())
+
+*//*        val blockPosList = currentOBB.getBlockPlane(origin)
+
+        for(i in 0..4){
+            for(j in 0..4){
+                val blockPos = blockPosList[i][j]
+                if(blockPos == emitterPos) continue
+                world.setBlockState(blockPos, Blocks.GLOWSTONE.defaultState)
+                FunnyBlockDoorMod.logger.info("BlockPos: $blockPos")
+            }
+        }*//*
+
+    for(i in 0..24){
+        val blockstate = testBlocks[i]
+
+        val blockPosList = currentOBB.getBlockPlane(origin, i)
+
+        for(k in 0..4){
+            for(j in 0..4){
+                val blockPos = blockPosList[k][j]
+                if(blockPos == emitterPos) continue
+                world.setBlockState(blockPos, blockstate)
+                FunnyBlockDoorMod.logger.info("BlockPos: $blockPos")
+            }
+        }
+
+        //origin = currentOBB.incrementByDirectionVec(origin)
+        }*/
+
+        val list = currentEmittingGrid.buildGrid()
+        for ((idx,blockBundle) in list.withIndex()){
+            val blockPos = blockBundle.blockPos
+            val blockState = testBlocks[idx / 25]
+            world.setBlockState(blockPos.add(emitterPos), blockState)
+        }
+
+       /*for(z in 0..24){
+            val block = testBlocks[z % testBlocks.size]
             for(y in 0..24){
                 for(x in 0..24){
-                    val pos = currentEmittingGrid.getBlock(x, y, z)
+                    val pos = currentEmittingGrid.getBlock(x,y,z)?.blockPos
                     if(pos != null){
                         //val item = inventory.getStack(x, y, z)
                         //if(item != null){
-                            val block = Blocks.AMETHYST_BLOCK.defaultState//getBlockStateFromItemStack(item)
+                            //val block = Blocks.AMETHYST_BLOCK.defaultState//getBlockStateFromItemStack(item)
                             if(block != null){
                                 blockPlaceUtil.placeBlock(pos.add(emitterPos), world, block, false)
                             }
@@ -290,7 +388,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
                     }
                 }
             }
-        }
+        }*/
         isEmitting = false
     }
 
@@ -309,7 +407,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private fun retractTick(world: World, emitterPos: BlockPos){
         if(inventory.reverseIterator().hasNext() && currentEmittingGrid.reverseIterator().hasNext()){
             val item = inventory.reverseIterator().next()
-            val pos = currentEmittingGrid.reverseIterator().next()
+            val pos = currentEmittingGrid.reverseIterator().next()?.blockPos
             if(item != null && pos != null){
                 val block = getBlockStateFromItemStack(item)
                 if(block != null){

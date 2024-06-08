@@ -27,6 +27,18 @@ data class Point3D(val x: Double, val y: Double, val z: Double) {
         return Point3D(x - other.x, y - other.y, z - other.z)
     }
 
+    operator fun minus(other: Vec3d): Point3D {
+        return Point3D(x - other.x, y - other.y, z - other.z)
+    }
+
+    fun dotProduct(other: Point3D): Double {
+        return x * other.x + y * other.y + z * other.z
+    }
+
+    fun dotProduct(other: Vec3d): Double {
+        return x * other.x + y * other.y + z * other.z
+    }
+
     fun dot(vec: Vec3d): Double {
         return x * vec.x + y * vec.y + z * vec.z
     }

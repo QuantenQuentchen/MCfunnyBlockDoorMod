@@ -25,7 +25,7 @@ class quickAndDirtyTestBlock(settings: Settings): Block(settings) {
         if (power != null) {
             if (power > 0) {
                 if (pos != null) {
-                    testEmit(world, pos)
+                    //testEmit(world, pos)
                 }
             } else {
                 // The block is not receiving redstone power
@@ -37,7 +37,7 @@ class quickAndDirtyTestBlock(settings: Settings): Block(settings) {
         private val voxelizedPrism = OBB.getEmittingGrid(0f, 90f, 0f).grid
     }
 
-    private fun testEmit(world: World, pos: BlockPos){
+    /*private fun testEmit(world: World, pos: BlockPos){
         var counter = 0
         val blockStates = listOf(
             Blocks.DIAMOND_BLOCK.defaultState,
@@ -77,6 +77,6 @@ class quickAndDirtyTestBlock(settings: Settings): Block(settings) {
 
         FunnyBlockDoorMod.logger.info("Dimensions of emittingPrism: x=$xDimension, y=$yDimension, z=$zDimension")
         FunnyBlockDoorMod.logger.info("Total blocks placed: $counter")
-    }
+    }*/
 
 }
