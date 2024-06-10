@@ -164,33 +164,15 @@ data class OBB(
 
         val blockPosArray = BlockPos3DGrid(MAX_OBB_SIZE, MAX_OBB_SIZE, MAX_OBB_SIZE)
 
-        var xIdx = 0
         for (x in xRange) {
-            var foundSomeX = false
-            var yIdx = 0
             for ( y in yRange) {
-                var foundSomeY = false
-                var zIdx = 0
                 for (z in zRange){
                     val point = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
                     if (contains(point)) {
-                        foundSomeY = true
-                        zIdx++
-/*                        if(x == 0 && y == 0 && z == 0){
-                            blockPosArray.setBlock(xIdx, yIdx, zIdx, null)
-                            continue
-                        }*/
                         val norm = getLocalCoordinatesInOBB(point)
-                        blockPosArray.setBlock(BlockBundle(norm, BlockPos(x, y, z)))
+                        blockPosArray.setBlock(norm, BlockPos(x, y, z))
                     }
                 }
-                if (foundSomeY) {
-                    yIdx++
-                    foundSomeX = true
-                }
-            }
-            if (foundSomeX) {
-                xIdx++
             }
         }
         return blockPosArray

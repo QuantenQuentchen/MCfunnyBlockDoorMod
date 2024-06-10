@@ -10,11 +10,15 @@ import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.LimitedNumberF
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.client.render.GameRenderer
+import net.minecraft.client.texture.Sprite
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.screen.ScreenHandler
+import net.minecraft.screen.slot.Slot
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import kotlin.math.min
 
 class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInventory, title: Text)
     : HandledScreen<DoorEmitterScreenHandler>(handler, inventory, title) {
@@ -283,4 +287,5 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
 
         drawMouseoverTooltip(context, mouseX, mouseY)
     }
+
 }
