@@ -59,9 +59,9 @@ class doorEmitterBlock(settings: Settings) : BlockWithEntity(settings), BlockEnt
                 player?.openHandledScreen(blockEntity)
             }
         }
-        var energy = ((world.getBlockEntity(pos!!) as doorEmitterBlockEntity).energyBehaviour as teamRebornEnergy).energyStorage.amount
-        FunnyBlockDoorMod.logger.info("Energy: $energy")
-        FunnyBlockDoorMod.logger.info("Block used")
+        //var energy = ((world.getBlockEntity(pos!!) as doorEmitterBlockEntity).energyBehaviour as teamRebornEnergy).energyStorage.amount
+        //FunnyBlockDoorMod.logger.info("Energy: $energy")
+        //FunnyBlockDoorMod.logger.info("Block used")
         return ActionResult.SUCCESS
 
     }

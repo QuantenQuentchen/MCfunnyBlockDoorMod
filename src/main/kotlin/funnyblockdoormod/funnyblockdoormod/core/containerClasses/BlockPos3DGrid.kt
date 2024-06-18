@@ -18,9 +18,8 @@ class BlockPos3DGrid(private val sizeX: Int, private val sizeY: Int, private val
         bundleOffsets.add(BlockBundle(cords, pos))
     }
 
-    fun buildGrid(): List<BlockBundle> {
-        return bundleOffsets.sortedWith(compareBy({ it.offset.z }, { it.offset.x }, { it.offset.y } )) //probably switch x and y
-
+    fun buildGrid(){
+        bundleOffsets.sortedWith(compareBy({ it.offset.z }, { it.offset.y }, { it.offset.x } )) //probably switch x and y
     }
 
     private val middle = ((sizeY + 1) / 2) -1

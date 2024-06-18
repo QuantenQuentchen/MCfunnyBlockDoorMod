@@ -168,13 +168,14 @@ data class OBB(
             for ( y in yRange) {
                 for (z in zRange){
                     val point = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
-                    if (contains(point)) {
+                    if (contains(point) && point != Point3D(0.0, 0.0, 0.0)) {
                         val norm = getLocalCoordinatesInOBB(point)
                         blockPosArray.setBlock(norm, BlockPos(x, y, z))
                     }
                 }
             }
         }
+        blockPosArray.buildGrid()
         return blockPosArray
     }
 

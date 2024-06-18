@@ -34,7 +34,7 @@ class quickAndDirtyTestBlock(settings: Settings): Block(settings) {
     }
 
     companion object {
-        private val voxelizedPrism = OBB.getEmittingGrid(0f, 90f, 0f).grid
+        //private val voxelizedPrism = OBB.getEmittingGrid(0f, 90f, 0f).grid
     }
 
     /*private fun testEmit(world: World, pos: BlockPos){

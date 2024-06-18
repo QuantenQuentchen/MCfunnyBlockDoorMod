@@ -20,6 +20,8 @@ object ModItemGroups {
             .entries { _, entries ->
                 entries.add(ModItems.UPGRADEBASE)
                 entries.add(ModBlocks.DOOREMITTER)
+                entries.add(ModBlocks.REDSTONEEMITTER)
+                entries.add(ModBlocks.REDSTONERECIEVER)
             }
             .build())
 

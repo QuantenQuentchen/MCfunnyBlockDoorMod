@@ -13,7 +13,7 @@ class LimitedNumberFieldWidget(textRenderer: TextRenderer,
 
     var maxNumber: Int = 360
     var minNumber: Int = 0
-    private var number: Int = 0
+    var number: Int = 0
         set(value) {
             text = value.toString()
             field = value
@@ -22,12 +22,24 @@ class LimitedNumberFieldWidget(textRenderer: TextRenderer,
     override fun charTyped(chr: Char, modifiers: Int): Boolean {
         if (chr.isDigit() || (chr == '-' && this.text.isEmpty())) {
             val potentialText = this.text + chr
-            val num = potentialText.toIntOrNull()
+            val num = potentialText.toIntOrNull() ?: return false
 
-            if (num != null && num in minNumber..maxNumber) {
-                number = num
-                correctCharLambda?.let { it(num) }
-                return super.charTyped(chr, modifiers)
+            when {
+                num < minNumber -> {
+                    number = minNumber
+                    correctCharLambda?.let { it(minNumber) }
+                    return super.charTyped(chr, modifiers)
+                }
+                num in minNumber..maxNumber -> {
+                    number = num
+                    correctCharLambda?.let { it(num) }
+                    return super.charTyped(chr, modifiers)
+                }
+                else -> {
+                    number = maxNumber
+                    correctCharLambda?.let { it(maxNumber) }
+                    return super.charTyped(chr, modifiers)
+                }
             }
         }
         return false

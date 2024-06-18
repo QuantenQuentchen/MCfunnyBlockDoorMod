@@ -1,0 +1,84 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "funnyblockdoormod:block/redstone_emitter",
+        "y": 0
+      },
+      "when": {
+        "facing": "north",
+        "powered": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "funnyblockdoormod:block/redstone_emitter_active",
+        "y": 0
+      },
+      "when": {
+        "facing": "north",
+        "powered": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "funnyblockdoormod:block/redstone_emitter",
+        "y": 90
+      },
+      "when": {
+        "facing": "east",
+        "powered": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "funnyblockdoormod:block/redstone_emitter_active",
+        "y": 90
+      },
+      "when": {
+        "facing": "east",
+        "powered": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "funnyblockdoormod:block/redstone_emitter",
+        "y": 180
+      },
+      "when": {
+        "facing": "south",
+        "powered": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "funnyblockdoormod:block/redstone_emitter_active",
+        "y": 180
+      },
+      "when": {
+        "facing": "south",
+        "powered": "true"
+      }
+    },
+    {
+      "apply": {
+        "model": "funnyblockdoormod:block/redstone_emitter",
+        "y": 270
+      },
+      "when": {
+        "facing": "west",
+        "powered": "false"
+      }
+    },
+    {
+      "apply": {
+        "model": "funnyblockdoormod:block/redstone_emitter_active",
+        "y": 270
+      },
+      "when": {
+        "facing": "west",
+        "powered": "true"
+      }
+    }
+  ]
+}
