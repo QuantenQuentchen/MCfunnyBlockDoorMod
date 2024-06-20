@@ -1,6 +1,10 @@
 {
   "item.funnyblockdoormod.upgrade_base": "Upgrade Base",
-  "itemgroup.funnyblockdoormod": "Funny Block Door Mod",
+  "itemgroup.funnyblockdoormod": "Block Door Mod",
 
-  "block.funnyblockdoormod.door_emitter": "Funny Block Emitter"
+  "block.funnyblockdoormod.door_emitter": "Door Emitter",
+
+  "block.funnyblockdoormod.redstone_emitter": "Redstone Emitter",
+
+  "block.funnyblockdoormod.redstone_receiver": "Redstone Receiver",
 }

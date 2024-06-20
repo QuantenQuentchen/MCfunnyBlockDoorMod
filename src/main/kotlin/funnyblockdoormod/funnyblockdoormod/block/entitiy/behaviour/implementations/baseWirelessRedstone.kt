@@ -1,5 +1,7 @@
 package funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations
 
+import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
+import funnyblockdoormod.funnyblockdoormod.annotations.ServerSideOnlyINFO
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneBehaviour
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneReciever
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneRecieverNum
@@ -13,6 +15,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.lang.ref.WeakReference
 
+@ServerSideOnlyINFO
 object baseWirelessRedstone: IwirelessRedstoneBehaviour {
 
 
@@ -75,5 +78,23 @@ object baseWirelessRedstone: IwirelessRedstoneBehaviour {
         val posDim = BlockPosDim(pos, dimId)
         wirelessRedstoneState.blockChannels[channel]?.remove(posDim)
         wirelessRedstoneState.markDirty()
+    }
+
+    override fun subscribeAsActivatorPos(channel: Int, pos: BlockPos, dim: RegistryKey<World>) {
+        val posdim = BlockPosDim(pos, wirelessRedstoneState.register(dim))
+        FunnyBlockDoorMod.logger.info("Subscribing $posdim to channel $channel")
+        wirelessRedstoneState.addTransmitter(channel, posdim)
+        wirelessRedstoneState.markDirty()
+    }
+
+    override fun unsubscribeAsActivatorPos(channel: Int, pos: BlockPos, dim: RegistryKey<World>) {
+        val posdim = BlockPosDim(pos, wirelessRedstoneState.register(dim))
+        FunnyBlockDoorMod.logger.info("Unsubscribing $posdim from channel $channel")
+        wirelessRedstoneState.removeTransmitter(channel, posdim)
+        wirelessRedstoneState.markDirty()
+        if(wirelessRedstoneState.getTransmitters(channel).isEmpty()){
+            FunnyBlockDoorMod.logger.info("No more transmitters on channel $channel")
+            setChannel(channel, false)
+        }
     }
 }

@@ -13,6 +13,10 @@ interface IwirelessRedstoneBehaviour {
 
     fun subscribe(redstoneReciever: IwirelessRedstoneRecieverNum)
 
+    fun subscribeAsActivatorPos(channel: Int, pos: BlockPos, dim: RegistryKey<World>)
+
+    fun unsubscribeAsActivatorPos(channel: Int, pos: BlockPos, dim: RegistryKey<World>)
+
     fun subscribePosToChannel(channel: Int, pos: BlockPos, dim: RegistryKey<World>)
 
     fun unsubscribeFromChannel(channel: Int, redstoneReciever: IwirelessRedstoneReciever)

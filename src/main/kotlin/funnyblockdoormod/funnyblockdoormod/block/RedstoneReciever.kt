@@ -6,12 +6,15 @@ import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementatio
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IchangableChannel
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneReciever
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneRecieverNum
+import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IConnectable
 import funnyblockdoormod.funnyblockdoormod.screen.WirelessRedstoneScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.block.RedstoneWireBlock
+import net.minecraft.block.RepeaterBlock
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -35,9 +38,11 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
+import net.minecraft.world.WorldAccess
 import java.rmi.registry.Registry
 
-class RedstoneReciever(settings: Settings): Block(settings), IwirelessRedstoneRecieverNum, IchangableChannel {
+class RedstoneReciever(settings: Settings): Block(settings), IwirelessRedstoneRecieverNum, IchangableChannel,
+    IConnectable {
 
     companion object {
         val FACING: DirectionProperty = Properties.HORIZONTAL_FACING
@@ -86,6 +91,7 @@ class RedstoneReciever(settings: Settings): Block(settings), IwirelessRedstoneRe
         return state.get(CHANNEL)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
         if (!world.isClient) {
             player.openHandledScreen(object : ExtendedScreenHandlerFactory {
@@ -136,12 +142,9 @@ class RedstoneReciever(settings: Settings): Block(settings), IwirelessRedstoneRe
         return this.defaultState.with(RedstoneEmitter.FACING, horizontalFacing)
     }
 
+    @Deprecated("Deprecated in Java", ReplaceWith("BlockRenderType.MODEL", "net.minecraft.block.BlockRenderType"))
     override fun getRenderType(state: BlockState?): BlockRenderType {
         return BlockRenderType.MODEL
-    }
-
-    override fun getStateManager(): StateManager<Block, BlockState> {
-        return super.getStateManager()
     }
 
 /*    @Deprecated("Deprecated in Java", ReplaceWith("if (state.get(FACING) == facing && state.get(POWERED)) 15 else 0"))
@@ -161,17 +164,23 @@ class RedstoneReciever(settings: Settings): Block(settings), IwirelessRedstoneRe
 
     @Deprecated("Deprecated in Java", ReplaceWith("true"))
     override fun hasComparatorOutput(state: BlockState): Boolean {
-        return true
+        return false
     }
 
-    @Deprecated("Deprecated in Java", ReplaceWith("0"))
+
+
+/*    @Deprecated("Deprecated in Java", ReplaceWith("0"))
     override fun getComparatorOutput(state: BlockState, world: World, pos: BlockPos): Int {
         // Implement your logic here to determine the comparator output
         return 0
-    }
+    }*/
 
     override fun onChannelChange(isActive: Boolean, pos: BlockPos, world: World) {
         setPoweredState(world, pos, isActive)
+    }
+
+    override fun canConnect(direction: Direction, state: BlockState): Boolean {
+        return state.get(FACING) == direction.opposite
     }
 
 }

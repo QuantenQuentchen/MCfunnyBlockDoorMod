@@ -1,9 +1,11 @@
 package funnyblockdoormod.funnyblockdoormod.block
 
 import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
+import funnyblockdoormod.funnyblockdoormod.annotations.ServerSideOnlyINFO
 import funnyblockdoormod.funnyblockdoormod.block.RedstoneReciever.Companion
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.baseWirelessRedstone
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IchangableChannel
+import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IConnectable
 import funnyblockdoormod.funnyblockdoormod.screen.DoorEmitterScreenHandler
 import funnyblockdoormod.funnyblockdoormod.screen.ModScreenHandlers
 import funnyblockdoormod.funnyblockdoormod.screen.WirelessRedstoneScreenHandler
@@ -12,9 +14,11 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemPlacementContext
+import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
@@ -34,7 +38,7 @@ import net.minecraft.world.BlockView
 import net.minecraft.world.TestableWorld
 import net.minecraft.world.World
 
-class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel {
+class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel, IConnectable {
 
     companion object {
         val FACING: DirectionProperty = Properties.HORIZONTAL_FACING
@@ -60,14 +64,23 @@ class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel {
 
     @Deprecated("Deprecated in Java")
     override fun neighborUpdate(state: BlockState, world: World, pos: BlockPos, block: Block, neighborPos: BlockPos, moved: Boolean) {
+        FunnyBlockDoorMod.logger.info("Neighbor update on Emitter with: $pos")
         val currentPoweredState = state.get(POWERED)
-        val facingDirection = state.get(FACING)
-        val facingPos = pos.offset(facingDirection)
-        val shouldPower = world.isReceivingRedstonePower(facingPos) //world.isReceivingRedstonePower(pos)
+        val shouldPower = getRecievingRedstone(state, world, pos)
         if (shouldPower != currentPoweredState) {
             world.setBlockState(pos, state.with(POWERED, shouldPower), 2)
             redstoneBehaviour.setChannel(state.get(CHANNEL), shouldPower)
         }
+    }
+
+    private fun getRecievingRedstone(state: BlockState, world: World?, pos: BlockPos?): Boolean {
+        val facingDirection = state.get(FACING)
+        val facingPos = pos?.offset(facingDirection)
+        if (world != null) {
+            //return world.isEmittingRedstonePower(pos, facingDirection) this is the fix, but bug is too braindead funny to remove atm
+            return world.isReceivingRedstonePower(facingPos)
+        }
+        return false
     }
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
@@ -133,16 +146,59 @@ class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel {
         return 0
     }
 
+    override fun onPlaced(
+        world: World?,
+        pos: BlockPos?,
+        state: BlockState?,
+        placer: LivingEntity?,
+        itemStack: ItemStack?
+    ) {
+        if(world == null || pos == null || state == null) return
+
+        if(!world.isClient){
+            redstoneBehaviour.subscribeAsActivatorPos(state.get(CHANNEL), pos, world.registryKey)
+        }
+
+        val currentPoweredState = state.get(POWERED)
+        val shouldPower = getRecievingRedstone(state, world, pos)
+        if (shouldPower != currentPoweredState) {
+            world.setBlockState(pos, state.with(POWERED, shouldPower), 2)
+            redstoneBehaviour.setChannel(state.get(CHANNEL), shouldPower)
+        }
+        super.onPlaced(world, pos, state, placer, itemStack)
+    }
+
+    override fun onBreak(
+        world: World?,
+        pos: BlockPos?,
+        state: BlockState?,
+        player: PlayerEntity?
+    ) {
+        if(world != null && pos != null && state != null){
+            if(!world.isClient){
+                redstoneBehaviour.unsubscribeAsActivatorPos(state.get(CHANNEL), pos, world.registryKey)
+            }
+        }
+        super.onBreak(world, pos, state, player)
+    }
+
+    @ServerSideOnlyINFO
     override fun setChannelState(world: World, pos: BlockPos, channel: Int) {
         val state = world.getBlockState(pos)
-        FunnyBlockDoorMod.logger.info("Setting channel to $channel")
+        if(state.get(CHANNEL) == channel) return
+        redstoneBehaviour.unsubscribeAsActivatorPos(state.get(CHANNEL), pos, world.registryKey)
         val newState = state.with(CHANNEL, channel)
         world.setBlockState(pos, newState, NOTIFY_NEIGHBORS or 2)
+        redstoneBehaviour.subscribeAsActivatorPos(channel, pos, world.registryKey)
     }
 
     override fun getChannelState(world: World, pos: BlockPos): Int {
         val state = world.getBlockState(pos)
         return state.get(CHANNEL)
+    }
+
+    override fun canConnect(direction: Direction, state: BlockState): Boolean {
+        return state.get(FACING) == direction.opposite
     }
 
 }
