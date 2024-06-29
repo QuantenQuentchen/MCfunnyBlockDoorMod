@@ -5,8 +5,6 @@ import net.minecraft.util.math.Vec3d
 
 class BlockPos3DGrid(private val sizeX: Int, private val sizeY: Int, private val sizeZ: Int) {
 
-    //val grid: Array<Array<Array<BlockBundle?>>> = Array(sizeX) { Array(sizeY) { arrayOfNulls(sizeZ) } }
-
     private val bundleOffsets = mutableListOf<BlockBundle>()
 
     fun getBlock(x: Int, y: Int, z: Int): BlockBundle? {
@@ -19,7 +17,7 @@ class BlockPos3DGrid(private val sizeX: Int, private val sizeY: Int, private val
     }
 
     fun buildGrid(){
-        bundleOffsets.sortedWith(compareBy({ it.offset.z }, { it.offset.y }, { it.offset.x } )) //probably switch x and y
+        bundleOffsets.sortedWith(compareBy({ it.offset.z }, { it.offset.y }, { it.offset.x } ))
     }
 
     private val middle = ((sizeY + 1) / 2) -1

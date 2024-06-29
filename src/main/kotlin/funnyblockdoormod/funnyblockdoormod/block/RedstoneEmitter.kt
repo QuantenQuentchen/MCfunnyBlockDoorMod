@@ -73,14 +73,9 @@ class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel, I
         }
     }
 
-    private fun getRecievingRedstone(state: BlockState, world: World?, pos: BlockPos?): Boolean {
+    private fun getRecievingRedstone(state: BlockState, world: World, pos: BlockPos): Boolean {
         val facingDirection = state.get(FACING)
-        val facingPos = pos?.offset(facingDirection)
-        if (world != null) {
-            //return world.isEmittingRedstonePower(pos, facingDirection) this is the fix, but bug is too braindead funny to remove atm
-            return world.isReceivingRedstonePower(facingPos)
-        }
-        return false
+        return world.isEmittingRedstonePower(pos, facingDirection)
     }
 
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {

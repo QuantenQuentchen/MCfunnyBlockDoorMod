@@ -1,12 +1,11 @@
 package funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions
 
-import com.mojang.datafixers.util.Pair
 import funnyblockdoormod.funnyblockdoormod.block.custom.doorEmitterInventory
+import net.minecraft.block.Block
+import net.minecraft.block.Blocks
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.screen.slot.Slot
-import net.minecraft.util.Identifier
-import java.util.*
 import kotlin.math.min
 
 class DoorEmitterInventorySlot(inventory: doorEmitterInventory, private var index: Int, x: Int, y: Int)
@@ -19,12 +18,17 @@ class DoorEmitterInventorySlot(inventory: doorEmitterInventory, private var inde
         return index// + (depth * 25)
     }
 
+    private fun isBlock(itemStack: ItemStack): Boolean {
+        val block = Block.getBlockFromItem(itemStack.item)
+        return block != Blocks.AIR
+    }
+
     override fun getStack(): ItemStack {
         return inventory.getStack(calculateIndex())
     }
 
     override fun canInsert(stack: ItemStack?): Boolean {
-        return inventory.isValid(calculateIndex(), stack)
+        return stack?.let { inventory.isValid(calculateIndex(), it) && isBlock(it) } ?: false
     }
 
     override fun canTakeItems(playerEntity: PlayerEntity): Boolean {
@@ -48,7 +52,25 @@ class DoorEmitterInventorySlot(inventory: doorEmitterInventory, private var inde
     }
 
     override fun takeStack(amount: Int): ItemStack {
-        return inventory.removeStack(calculateIndex(), amount)
+        inventory.removeStack(calculateIndex(), amount)
+        return ItemStack.EMPTY
     }
 
+    override fun insertStack(stack: ItemStack): ItemStack {
+        if (this.canInsert(stack)) {
+            // Set the slot's stack to a single item from the input stack, without decreasing the input stack
+            this.setStackNoCallbacks(stack.copy().apply { count = 1 })
+        }
+        return stack
+    }
+
+    override fun insertStack(stack: ItemStack?, count: Int): ItemStack {
+
+        if(stack == null) return ItemStack.EMPTY
+
+        val copStack = stack.copy()
+        copStack.count = 1
+        this.stack = copStack
+        return stack
+    }
 }

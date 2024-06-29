@@ -123,10 +123,10 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
         return propertyDelegate.get(2)
     }
 
-    override fun quickMove(player: PlayerEntity?, slot: Int): ItemStack {
+    override fun quickMove(player: PlayerEntity?, slotId: Int): ItemStack {
         var newStack = ItemStack.EMPTY
-        val slot = slots[slot]
-        if(slot != null && slot.hasStack()){
+        val slot = slots[slotId]
+        if(slot.hasStack()){
             val originalStack = slot.stack
             newStack = originalStack.copy()
             if(slot.id < 2){

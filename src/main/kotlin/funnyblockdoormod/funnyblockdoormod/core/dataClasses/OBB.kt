@@ -68,7 +68,7 @@ data class OBB(
             return Vec3d(newX3, newY3, newZ3)
         }
 
-        fun getRotatedOBB(angleX: Float, angleY: Float, angleZ: Float): OBB {
+        private fun getRotatedOBB(angleX: Float, angleY: Float, angleZ: Float): OBB {
             val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
             obbMap[rotationCompInt]?.let { return it }
 
