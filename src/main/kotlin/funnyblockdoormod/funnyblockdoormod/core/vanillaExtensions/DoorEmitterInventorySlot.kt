@@ -1,5 +1,6 @@
 package funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions
 
+import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
 import funnyblockdoormod.funnyblockdoormod.block.custom.doorEmitterInventory
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
@@ -40,10 +41,11 @@ class DoorEmitterInventorySlot(inventory: doorEmitterInventory, private var inde
     }
 
     override fun onQuickTransfer(newItem: ItemStack, original: ItemStack) {
-        val i = original.count - newItem.count
+        FunnyBlockDoorMod.logger.info("Quick transfer")
+/*        val i = original.count - newItem.count
         if (i > 0) {
             this.onCrafted(original, i)
-        }
+        }*/
     }
 
     override fun setStackNoCallbacks(stack: ItemStack?) {
@@ -72,5 +74,11 @@ class DoorEmitterInventorySlot(inventory: doorEmitterInventory, private var inde
         copStack.count = 1
         this.stack = copStack
         return stack
+    }
+
+    override fun setStack(stack: ItemStack?) {
+        if (stack != null) {
+            inventory.setStack(calculateIndex(), stack.copyWithCount(1))
+        }
     }
 }

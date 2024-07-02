@@ -68,7 +68,7 @@ data class OBB(
             return Vec3d(newX3, newY3, newZ3)
         }
 
-        private fun getRotatedOBB(angleX: Float, angleY: Float, angleZ: Float): OBB {
+        fun getRotatedOBB(angleX: Float, angleY: Float, angleZ: Float): OBB {
             val rotationCompInt = encodeAngles(angleX.toInt(), angleY.toInt(), angleZ.toInt())
             obbMap[rotationCompInt]?.let { return it }
 
@@ -168,7 +168,7 @@ data class OBB(
             for ( y in yRange) {
                 for (z in zRange){
                     val point = Point3D(x.toDouble(), y.toDouble(), z.toDouble())
-                    if (contains(point) && point != Point3D(0.0, 0.0, 0.0)) {
+                    if (contains(point)) {
                         val norm = getLocalCoordinatesInOBB(point)
                         blockPosArray.setBlock(norm, BlockPos(x, y, z))
                     }

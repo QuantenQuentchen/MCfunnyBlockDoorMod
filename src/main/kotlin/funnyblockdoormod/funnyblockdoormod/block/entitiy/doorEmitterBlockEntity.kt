@@ -10,9 +10,9 @@ import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.Ie
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneBehaviour
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneReciever
 import funnyblockdoormod.funnyblockdoormod.core.containerClasses.BlockPos3DGrid
-import funnyblockdoormod.funnyblockdoormod.core.containerClasses.BlockState3DGrid
 import funnyblockdoormod.funnyblockdoormod.core.dataClasses.OBB
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.InventoryDepthChange
+import funnyblockdoormod.funnyblockdoormod.debug.debugBlockStateList
 import funnyblockdoormod.funnyblockdoormod.screen.DoorEmitterScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
@@ -22,19 +22,17 @@ import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.inventory.Inventories
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.particle.ParticleType
 import net.minecraft.screen.PropertyDelegate
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.Vec3i
 import net.minecraft.world.World
 
 
@@ -42,8 +40,6 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     InventoryDepthChange {
 
     companion object {
-        private val INPUT_SLOT = 0
-        private val OUTPUT_SLOT = 1
 
         //maybe init behaviour here
         var defaultEnergyBehaviourFactory: IenergyBehaviourFactory = noEnergy.Companion
@@ -144,6 +140,8 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private var energyConsumptionMultiplier = 1f
 
     private var energyConsumptionPerBlock = (energyConsumptionPerBlockBase * energyConsumptionMultiplier).toInt()
+
+    private val placmentIterator = placementIteratorManager.fromNbt(null)
 
     //Behaviour
 
@@ -266,7 +264,16 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
     private var ticks = 0
     private var switch = false
+    private var x = 0
+    private var y = 0
+    private var z = 0
+    private var i = 0
     fun tick(world: World, pos: BlockPos, state: BlockState) {
+
+        debugDrawOBB(world, OBB.getRotatedOBB(currentXAngle, currentYAngle, currentZAngle), pos)
+
+        //debugOBBOffsets(world, pos)
+
         if (world.isClient) return
         if (!world.isChunkLoaded(pos)) return
 
@@ -275,7 +282,10 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
             decrementBlockDelay()
             return
         }
-        if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return
+
+        debugOBBOffsets(world, pos)
+
+        //if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return
 
 
         val currentTickTime = System.currentTimeMillis()
@@ -285,13 +295,14 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
         when(extensionState) {
             ExtensionState.EXTENDING -> {
-                energyBehaviour.consume(energyConsumptionPerBlock)
-                emittTick(world, pos)
+                //energyBehaviour.consume(energyConsumptionPerBlock)
+                //emittTick(world, pos)
+
             }
 
             ExtensionState.RETRACTING -> {
-                energyBehaviour.consume(energyConsumptionPerBlock)
-                retractTick(world, pos)
+                //energyBehaviour.consume(energyConsumptionPerBlock)
+                //retractTick(world, pos)
             }
 
             ExtensionState.RETRACTED -> {
@@ -334,9 +345,46 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
         lastTickTime = currentTickTime
     }
 
+    private fun debugOBBOffsets(world: World, pos: BlockPos) {
+        FunnyBlockDoorMod.logger.info("x: $x, y: $y, z: $z")
+        val block = currentEmittingGrid.bundleOffsets[i]
+
+        if(block != null && !(block.blockPos.x == 0 && block.blockPos.y == 0 && block.blockPos.z == 0)){
+            world.setBlockState(block.blockPos.add(pos), Blocks.QUARTZ_BLOCK.defaultState,3)
+        }
+        x++
+        if(x > 5) {
+            x = 0
+            y++
+        }
+        if(y > 5) {
+            y = 0
+            x = 0
+            z++
+        }
+        if(z > 25) {
+            z = 0
+            y = 0
+            x = 0
+        }
+
+        i++
+        if(i > currentEmittingGrid.bundleOffsets.size - 1){
+            i = 0
+        }
+
+/*        for (block in currentEmittingGrid.bundleOffsets) {
+            world.setBlockState(block.blockPos.add(pos), Blocks.QUARTZ_BLOCK.defaultState,3)
+        }*/
+    }
+
+    private fun debugDrawOBB(world: World, obb: OBB, pos: BlockPos) {
+        obb.debugDrawOBB(world, obb, pos)
+    }
+
     private fun emittTick(world: World, emitterPos: BlockPos) {
         //TODO: Figure out Quartz Issue apparently overstepping bounds
-        if(inventory.iterator().hasNext() && currentEmittingGrid.iterator().hasNext()){
+/*        if(inventory.iterator().hasNext() && currentEmittingGrid.iterator().hasNext()){
             val item = inventory.iterator().next()
             val pos = currentEmittingGrid.iterator().next()?.blockPos
             if(item != null && pos != null){
@@ -347,11 +395,28 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
             }
         } else{
             setExtendedState()
+        }*/
+
+        if(placmentIterator.hasNext()){
+
+            val cords = placmentIterator.next() ?: return
+
+            val item = inventory.getStackOrNull(cords)
+            val pos = currentEmittingGrid.getBlock(cords)?.blockPos
+            if(item != null && pos != null){
+                val block = getBlockStateFromItemStack(item)
+                if(block != null){
+                    blockPlaceUtil.placeBlock(pos.add(emitterPos), world, block, false)
+                }
+            }
+        } else{
+            setExtendedState()
         }
+
     }
 
     private fun retractTick(world: World, emitterPos: BlockPos){
-        if(inventory.reverseIterator().hasNext() && currentEmittingGrid.reverseIterator().hasNext()){
+/*        if(inventory.reverseIterator().hasNext() && currentEmittingGrid.reverseIterator().hasNext()){
             val item = inventory.reverseIterator().next()
             val pos = currentEmittingGrid.reverseIterator().next()?.blockPos
             if(item != null && pos != null){
@@ -362,7 +427,24 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
             }
         } else{
             setRetractedState()
+        }*/
+
+        if(placmentIterator.revHasNext()){
+
+            val cords = placmentIterator.revNext() ?: return
+
+            val item = inventory.getStackOrNull(cords)
+            val pos = currentEmittingGrid.getBlock(cords)?.blockPos
+            if(item != null && pos != null){
+                val block = getBlockStateFromItemStack(item)
+                if(block != null){
+                    blockPlaceUtil.removeBlock(pos.add(emitterPos), world, block, false)
+                }
+            }
+        } else{
+            setRetractedState()
         }
+
     }
 
     override fun onChannelChange(isActive: Boolean) {

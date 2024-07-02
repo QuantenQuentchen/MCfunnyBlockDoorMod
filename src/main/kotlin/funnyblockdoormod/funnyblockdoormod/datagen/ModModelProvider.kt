@@ -30,8 +30,23 @@ class ModModelProvider(output: FabricDataOutput?) : FabricModelProvider(output) 
         })
 
 
-        blockStateModelGenerator?.registerSimpleState(ModBlocks.DOOREMITTER)
+        blockStateModelGenerator?.blockStateCollector?.accept(MultipartBlockStateSupplier
+            .create(ModBlocks.DOOREMITTER).apply {
+                Direction.Type.HORIZONTAL.forEach { direction ->
+                    with(When.create().set(Properties.HORIZONTAL_FACING, direction).set(Properties.POWERED, false),
+                        BlockStateVariant.create().put(
+                            VariantSettings.MODEL,
+                            Identifier("funnyblockdoormod", "block/door_emitter")
+                        ).put(VariantSettings.Y, VariantSettings.Rotation.entries[getYRotation(direction) / 90]))
+                    with(When.create().set(Properties.HORIZONTAL_FACING, direction).set(Properties.POWERED, true),
+                        BlockStateVariant.create().put(
+                            VariantSettings.MODEL,
+                            Identifier("funnyblockdoormod", "block/door_emitter_active")
+                        ).put(VariantSettings.Y, VariantSettings.Rotation.entries[getYRotation(direction) / 90]))
+                }
+            })
 
+        //blockStateModelGenerator?.registerSimpleState(ModBlocks.DOOREMITTER)
 
         blockStateModelGenerator?.blockStateCollector?.accept(MultipartBlockStateSupplier
             .create(ModBlocks.REDSTONERECIEVER).apply {

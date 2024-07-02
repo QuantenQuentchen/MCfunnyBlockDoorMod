@@ -1,9 +1,9 @@
 {
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "torch_tex",
-		"1": "rep_tex",
-		"particle": "torch_tex"
+		"0": "funnyblockdoormod:block/torch_tex",
+		"1": "funnyblockdoormod:block/rep_tex",
+		"particle": "funnyblockdoormod:block/torch_tex"
 	},
 	"elements": [
 		{

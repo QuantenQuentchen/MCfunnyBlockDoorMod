@@ -2,14 +2,21 @@ package funnyblockdoormod.funnyblockdoormod.core.containerClasses
 
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.Vec3i
 
-class BlockPos3DGrid(private val sizeX: Int, private val sizeY: Int, private val sizeZ: Int) {
+class BlockPos3DGrid(private val sizeX: Int, private val sizeY: Int, val sizeZ: Int) {
 
-    private val bundleOffsets = mutableListOf<BlockBundle>()
+    val bundleOffsets = mutableListOf<BlockBundle>()
 
     fun getBlock(x: Int, y: Int, z: Int): BlockBundle? {
         val idx = convertTo1D(x, y, z)
-        return if (idx != null) bundleOffsets[idx] else null
+        val bundle = bundleOffsets[idx ?: return null]
+        if(bundle.blockPos.x == 0 && bundle.blockPos.y == 0 && bundle.blockPos.z == 0) return null
+        return bundle
+    }
+
+    fun getBlock(cords: Vec3i): BlockBundle? {
+        return getBlock(cords.x, cords.y, cords.z)
     }
 
     fun setBlock(cords: Vec3d, pos: BlockPos) {
@@ -17,79 +24,20 @@ class BlockPos3DGrid(private val sizeX: Int, private val sizeY: Int, private val
     }
 
     fun buildGrid(){
-        bundleOffsets.sortedWith(compareBy({ it.offset.z }, { it.offset.y }, { it.offset.x } ))
-    }
-
-    private val middle = ((sizeY + 1) / 2) -1
-
-    private var x = middle
-    private var y = middle
-    private var z = 0
-    private var state = 0
-    private var layer = 0
-
-    fun iterator(): Iterator<BlockBundle?> {
-        return object : Iterator<BlockBundle?> {
-
-            override fun hasNext(): Boolean {
-                return z < sizeZ
-            }
-
-            override fun next(): BlockBundle? {
-                val item = when (state) {
-                    0 -> getBlock(x, y-layer, z)//grid.getOrNull(z)?.getOrNull(y - layer)?.getOrNull(x) // Up
-                    1 -> getBlock(x+layer, y, z)//grid.getOrNull(z)?.getOrNull(y)?.getOrNull(x + layer) // Right
-                    2 -> getBlock(x, y+layer, z)//grid.getOrNull(z)?.getOrNull(y + layer)?.getOrNull(x) // Down
-                    3 -> getBlock(x-layer, y, z)//grid.getOrNull(z)?.getOrNull(y)?.getOrNull(x - layer) // Left
-                    else -> null
-                }
-                state = (state + 1) % 4
-                if (state == 0) {
-                    layer++
-                    if (layer > x || layer > y) {
-                        layer = 0
-                        if (z < sizeZ - 1) {
-                            z++
-                        }
-                    }
-                }
-                return item
-            }
-        }
-    }
-
-    fun reverseIterator(): Iterator<BlockBundle?> {
-        return object : Iterator<BlockBundle?> {
-
-            override fun hasNext(): Boolean {
-                return z >= 0
-            }
-
-            override fun next(): BlockBundle? {
-                val item = when (state) {
-                    0 -> getBlock(x, y+layer, z)//grid.getOrNull(z)?.getOrNull(y + layer)?.getOrNull(x) // Down
-                    1 -> getBlock(x-layer, y, z)//grid.getOrNull(z)?.getOrNull(y)?.getOrNull(x - layer) // Left
-                    2 -> getBlock(x, y-layer, z)//grid.getOrNull(z)?.getOrNull(y - layer)?.getOrNull(x) // Up
-                    3 -> getBlock(x+layer, y, z)//grid.getOrNull(z)?.getOrNull(y)?.getOrNull(x + layer) // Right
-                    else -> null
-                }
-                state = (state + 1) % 4
-                if (state == 0) {
-                    layer++
-                    if (layer > x || layer > y) {
-                        layer = 0
-                        if (z > 0) {
-                            z--
-                        }
-                    }
-                }
-                return item
-            }
-        }
+        bundleOffsets.sortedWith(compareBy({ it.offset.x }, { it.offset.y }, { it.offset.z } ))
     }
 
     private fun convertTo1D(x: Int, y: Int, z: Int): Int? {
-        val idx = x + y * sizeZ + z * sizeZ * sizeY
+
+        //val idx = (z-1)*(y-1)*x+y+z
+
+        //val idx = z + (sizeZ+1) * (x + (sizeX+1) * y)
+
+        val idx = z * 25 + y * 5 + x
+
+        //val idx = z * ((sizeY+1) * (sizeX+1)) + y * (sizeX+1) + x
+
+        //val idx = z * (sizeY * sizeX) + y * sizeX + x
         return if (idx < bundleOffsets.size) idx else null
     }
 

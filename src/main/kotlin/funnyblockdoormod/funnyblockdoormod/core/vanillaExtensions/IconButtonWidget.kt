@@ -10,7 +10,7 @@ import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.Text
 
 open class IconButtonWidget(x:Int, y:Int, width: Int, height: Int, private val onPressAction: PressAction,
-                            protected val defaultIcon: ButtonIcon, private val hoverIcon: ButtonIcon,
+                            protected var defaultIcon: ButtonIcon, private val hoverIcon: ButtonIcon,
                             protected var pressIcon: ButtonIcon, private val disabledIcon: ButtonIcon,
 ) : PressableWidget(x, y, width, height, Text.of("")) {
 

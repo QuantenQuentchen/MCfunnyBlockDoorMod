@@ -266,4 +266,90 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
         sendContentUpdates()
     }
 
+
+    override fun insertItem(stack: ItemStack?, startIndex: Int, endIndex: Int, fromLast: Boolean): Boolean {
+        var bl = false
+        var i = startIndex
+        if (fromLast) {
+            i = endIndex - 1
+        }
+        var slot: Slot
+        var itemStack: ItemStack
+        if (stack!!.isStackable) {
+            while (!stack.isEmpty) {
+                if (fromLast) {
+                    if (i < startIndex) {
+                        break
+                    }
+                } else if (i >= endIndex) {
+                    break
+                }
+
+                slot = slots[i]
+                itemStack = slot.stack
+                if (!itemStack.isEmpty && ItemStack.canCombine(stack, itemStack)) {
+                    val j = itemStack.count + stack.count
+                    if (j <= stack.maxCount) {
+                        //stack.count = 0
+                        itemStack.count = 1
+                        slot.markDirty()
+                        bl = true
+                    } else if (itemStack.count < stack.maxCount) {
+                        //stack.decrement(stack.maxCount - itemStack.count)
+                        itemStack.count = 1
+                        slot.markDirty()
+                        bl = true
+                    }
+                }
+
+                if (fromLast) {
+                    --i
+                } else {
+                    ++i
+                }
+            }
+        }
+
+        if (!stack.isEmpty) {
+            i = if (fromLast) {
+                endIndex - 1
+            } else {
+                startIndex
+            }
+
+            while (true) {
+                if (fromLast) {
+                    if (i < startIndex) {
+                        break
+                    }
+                } else if (i >= endIndex) {
+                    break
+                }
+
+                slot = slots[i]
+                itemStack = slot.stack
+                if (itemStack.isEmpty && slot.canInsert(stack)) {
+                    if (stack.count > slot.maxItemCount) {
+                        slot.insertStack(stack)
+                        //slot.stack = stack.split(slot.maxItemCount)
+                    } else {
+                        slot.insertStack(stack)
+                        //slot.stack = stack.split(stack.count)
+                    }
+
+                    slot.markDirty()
+                    bl = true
+                    break
+                }
+
+                if (fromLast) {
+                    --i
+                } else {
+                    ++i
+                }
+            }
+        }
+
+        return bl
+    }
 }

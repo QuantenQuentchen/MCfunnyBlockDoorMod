@@ -59,7 +59,7 @@ class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel, I
     override fun getPlacementState(ctx: ItemPlacementContext): BlockState? {
         val playerFacing = ctx.playerLookDirection.opposite
         val horizontalFacing = if (playerFacing.axis.isHorizontal) playerFacing else Direction.NORTH
-        return this.defaultState.with(RedstoneEmitter.FACING, horizontalFacing)
+        return this.defaultState.with(FACING, horizontalFacing)
     }
 
     @Deprecated("Deprecated in Java")

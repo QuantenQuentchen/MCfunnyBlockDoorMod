@@ -4,8 +4,8 @@
 		"0": "funnyblockdoormod:block/tex0",
 		"1": "funnyblockdoormod:block/tex1",
 		"2": "funnyblockdoormod:block/tex2",
-		"3": "funnyblockdoormod:block/tex3",
 		"4": "funnyblockdoormod:block/tex4",
+		"5": "funnyblockdoormod:block/tex5",
 		"particle": "funnyblockdoormod:block/tex0"
 	},
 	"elements": [
@@ -393,7 +393,7 @@
 			"faces": {
 				"north": {"uv": [0, 0, 2, 2], "texture": "#missing"},
 				"east": {"uv": [0, 0, 1, 2], "texture": "#missing"},
-				"south": {"uv": [0, 0, 15.15556, 15.11111], "texture": "#3"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#5"},
 				"west": {"uv": [0, 0, 1, 2], "texture": "#missing"},
 				"up": {"uv": [0, 0, 2, 1], "rotation": 180, "texture": "#missing"},
 				"down": {"uv": [0, 0, 2, 1], "rotation": 180, "texture": "#missing"}

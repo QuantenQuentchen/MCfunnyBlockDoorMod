@@ -67,6 +67,11 @@ class IconToggleWidget(x:Int, y:Int, width: Int, height: Int, onPressAction: Pre
         toggled = !toggled
     }
 
+    fun setDisplayedIcon(icon: ButtonIcon){
+        defaultIcon = icon
+        this.icon = icon
+    }
+
     override fun onPress() {
         super.onPress()
         toggleIcon()

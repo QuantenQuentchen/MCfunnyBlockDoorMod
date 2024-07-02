@@ -20,7 +20,7 @@ class WirelessRedstoneScreen(handler: WirelessRedstoneScreenHandler, inventory: 
     }
 
     init {
-        backgroundWidth = 160
+        backgroundWidth = 165
         backgroundHeight = 60
     }
 

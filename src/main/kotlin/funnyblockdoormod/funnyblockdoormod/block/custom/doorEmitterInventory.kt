@@ -8,6 +8,7 @@ import net.minecraft.inventory.InventoryChangedListener
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtList
+import net.minecraft.util.math.Vec3i
 import java.lang.ref.WeakReference
 
 class doorEmitterInventory(): Inventory{
@@ -67,64 +68,10 @@ class doorEmitterInventory(): Inventory{
         listeners.removeAll { it.get() == listener }
     }
 
-    fun iterator(): Iterator<ItemStack?> {
-        return object : Iterator<ItemStack?> {
+    fun getStackOrNull(Vec3i: Vec3i): ItemStack? {
 
-            override fun hasNext(): Boolean {
-                return z < inventory.size
-            }
-
-            override fun next(): ItemStack? {
-                val item = when (state) {
-                    0 -> inventory.getOrNull(z)?.getOrNull(y - layer)?.getOrNull(x) // Up
-                    1 -> inventory.getOrNull(z)?.getOrNull(y)?.getOrNull(x + layer) // Right
-                    2 -> inventory.getOrNull(z)?.getOrNull(y + layer)?.getOrNull(x) // Down
-                    3 -> inventory.getOrNull(z)?.getOrNull(y)?.getOrNull(x - layer) // Left
-                    else -> null
-                }
-                state = (state + 1) % 4
-                if (state == 0) {
-                    layer++
-                    if (layer > x || layer > y) {
-                        layer = 0
-                        if (z < inventory.size - 1) {
-                            z++
-                        }
-                    }
-                }
-                return item
-            }
-        }
-    }
-
-    fun reverseIterator(): Iterator<ItemStack?> {
-        return object : Iterator<ItemStack?> {
-
-            override fun hasNext(): Boolean {
-                return z >= 0
-            }
-
-            override fun next(): ItemStack? {
-                val item = when (state) {
-                    0 -> inventory.getOrNull(z)?.getOrNull(y + layer)?.getOrNull(x) // Down
-                    1 -> inventory.getOrNull(z)?.getOrNull(y)?.getOrNull(x - layer) // Left
-                    2 -> inventory.getOrNull(z)?.getOrNull(y - layer)?.getOrNull(x) // Up
-                    3 -> inventory.getOrNull(z)?.getOrNull(y)?.getOrNull(x + layer) // Right
-                    else -> null
-                }
-                state = (state + 1) % 4
-                if (state == 0) {
-                    layer++
-                    if (layer > x || layer > y) {
-                        layer = 0
-                        if (z > 0) {
-                            z--
-                        }
-                    }
-                }
-                return item
-            }
-        }
+        val stack = getStack(Vec3i.x, Vec3i.y, Vec3i.z)
+        return if (stack == ItemStack.EMPTY) null else stack
     }
 
     fun toNbt(): NbtCompound {
