@@ -285,7 +285,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
         debugOBBOffsets(world, pos)
 
-        //if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return
+        if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return
 
 
         val currentTickTime = System.currentTimeMillis()
@@ -295,14 +295,14 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
         when(extensionState) {
             ExtensionState.EXTENDING -> {
-                //energyBehaviour.consume(energyConsumptionPerBlock)
-                //emittTick(world, pos)
+                energyBehaviour.consume(energyConsumptionPerBlock)
+                emittTick(world, pos)
 
             }
 
             ExtensionState.RETRACTING -> {
-                //energyBehaviour.consume(energyConsumptionPerBlock)
-                //retractTick(world, pos)
+                energyBehaviour.consume(energyConsumptionPerBlock)
+                retractTick(world, pos)
             }
 
             ExtensionState.RETRACTED -> {
