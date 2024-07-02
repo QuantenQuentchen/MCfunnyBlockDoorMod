@@ -1,22 +1,35 @@
 package funnyblockdoormod.funnyblockdoormod.core.containerClasses
 
+import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.Vec3i
+import kotlin.math.abs
 
 class BlockPos3DGrid(private val sizeX: Int, private val sizeY: Int, val sizeZ: Int) {
 
     val bundleOffsets = mutableListOf<BlockBundle>()
 
-    fun getBlock(x: Int, y: Int, z: Int): BlockBundle? {
+    private val sizeZcorr = sizeZ + 1
+
+    private fun getBlock(x: Int, y: Int, z: Int): BlockBundle? {
         val idx = convertTo1D(x, y, z)
         val bundle = bundleOffsets[idx ?: return null]
         if(bundle.blockPos.x == 0 && bundle.blockPos.y == 0 && bundle.blockPos.z == 0) return null
         return bundle
     }
 
+    private fun transform(cords: Vec3i): Vec3i{
+        return Vec3i(
+            abs(cords.x - (sizeX-1)),
+            abs(cords.y - (sizeY-1)),
+            cords.z
+        )
+    }
+
     fun getBlock(cords: Vec3i): BlockBundle? {
-        return getBlock(cords.x, cords.y, cords.z)
+        val transCords = transform(cords)
+        return getBlock(transCords.x, transCords.y, transCords.z)
     }
 
     fun setBlock(cords: Vec3d, pos: BlockPos) {
@@ -28,16 +41,8 @@ class BlockPos3DGrid(private val sizeX: Int, private val sizeY: Int, val sizeZ: 
     }
 
     private fun convertTo1D(x: Int, y: Int, z: Int): Int? {
-
-        //val idx = (z-1)*(y-1)*x+y+z
-
-        //val idx = z + (sizeZ+1) * (x + (sizeX+1) * y)
-
-        val idx = z * 25 + y * 5 + x
-
-        //val idx = z * ((sizeY+1) * (sizeX+1)) + y * (sizeX+1) + x
-
-        //val idx = z * (sizeY * sizeX) + y * sizeX + x
+        val idx = (y + x * sizeY ) * sizeZcorr + z
+        if(idx > bundleOffsets.size){ FunnyBlockDoorMod.logger.error("This shouldn't be happening: $idx $x, $y, $z") }
         return if (idx < bundleOffsets.size) idx else null
     }
 

@@ -162,7 +162,7 @@ data class OBB(
         val lenDim = (LENGTH *2+1).toInt()
 
 
-        val blockPosArray = BlockPos3DGrid(MAX_OBB_SIZE, MAX_OBB_SIZE, MAX_OBB_SIZE)
+        val blockPosArray = BlockPos3DGrid(SIZE_U.toInt(), SIZE_V.toInt(), MAX_OBB_SIZE)
 
         for (x in xRange) {
             for ( y in yRange) {

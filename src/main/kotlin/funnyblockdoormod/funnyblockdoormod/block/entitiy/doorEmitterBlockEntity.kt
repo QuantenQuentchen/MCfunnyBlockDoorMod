@@ -270,7 +270,7 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private var i = 0
     fun tick(world: World, pos: BlockPos, state: BlockState) {
 
-        debugDrawOBB(world, OBB.getRotatedOBB(currentXAngle, currentYAngle, currentZAngle), pos)
+        //debugDrawOBB(world, OBB.getRotatedOBB(currentXAngle, currentYAngle, currentZAngle), pos)
 
         //debugOBBOffsets(world, pos)
 
@@ -346,18 +346,17 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     }
 
     private fun debugOBBOffsets(world: World, pos: BlockPos) {
-        FunnyBlockDoorMod.logger.info("x: $x, y: $y, z: $z")
-        val block = currentEmittingGrid.bundleOffsets[i]
+        val block = currentEmittingGrid.getBlock(Vec3i(x, y, z))
 
         if(block != null && !(block.blockPos.x == 0 && block.blockPos.y == 0 && block.blockPos.z == 0)){
             world.setBlockState(block.blockPos.add(pos), Blocks.QUARTZ_BLOCK.defaultState,3)
         }
         x++
-        if(x > 5) {
+        if(x > 4) {
             x = 0
             y++
         }
-        if(y > 5) {
+        if(y > 4) {
             y = 0
             x = 0
             z++
