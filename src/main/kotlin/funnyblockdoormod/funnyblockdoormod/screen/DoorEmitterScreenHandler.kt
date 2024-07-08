@@ -71,6 +71,17 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
         }
     }
 
+    fun setChannel(channel: Int) {
+        blockEntity.setNewChannel(channel)
+        /*val currentChannels = propertyDelegate.get(1)
+        val newChannels = if(isActive){
+            currentChannels or (1 shl channel)
+        } else {
+            currentChannels and (1 shl channel).inv()
+        }
+        propertyDelegate.set(1, newChannels)*/
+    }
+
     fun incrementInvDepth(){
         sendDepthDeltaPacketToServer(1)
     }
@@ -121,6 +132,10 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
 
     fun getEnergyStorage(): Int {
         return propertyDelegate.get(2)
+    }
+
+    override fun endQuickCraft() {
+        super.endQuickCraft()
     }
 
     override fun quickMove(player: PlayerEntity?, slotId: Int): ItemStack {
@@ -349,7 +364,10 @@ class DoorEmitterScreenHandler: ScreenHandler, InventoryChangedListener{
                 }
             }
         }
-
+        val setStacks = endIndex - startIndex
+        val stackCopy = stack.copy()
+        stackCopy.count = setStacks
+        cursorStack = stackCopy
         return bl
     }
 }

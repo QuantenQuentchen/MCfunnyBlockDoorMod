@@ -27,26 +27,17 @@ class doorEmitterInventory(): Inventory{
                     }
                 }
             }
-            inventory.x = nbt.getInt("x")
-            inventory.y = nbt.getInt("y")
-            inventory.z = nbt.getInt("z")
-            inventory.state = nbt.getInt("state")
-            inventory.layer = nbt.getInt("layer")
+            inventory.setSlots = nbt.getInt("setSlots")
             return inventory
         }
     }
 
     val inventory: Array<Array<Array<ItemStack?>>> = Array(25) { Array(5) { arrayOfNulls(5) } }
 
-    private val middle = ((inventory[0].size + 1) / 2) -1
-
-    private var x = middle
-    private var y = middle
-    private var z = 0
-    private var state = 0
-    private var layer = 0
     private val listeners = mutableListOf<WeakReference<InventoryChangedListener>>()
     private val depthListeners = mutableListOf<WeakReference<InventoryDepthChange>>()
+
+    private var setSlots: Int = 0
 
     var depth = 0
         set(value) {
@@ -93,11 +84,7 @@ class doorEmitterInventory(): Inventory{
 
         val nbtCompound = NbtCompound()
         nbtCompound.put("inventory", nbtListZ)
-        nbtCompound.putInt("x", x)
-        nbtCompound.putInt("y", y)
-        nbtCompound.putInt("z", z)
-        nbtCompound.putInt("state", state)
-        nbtCompound.putInt("layer", layer)
+        nbtCompound.putInt("setSlots", setSlots)
 
         return nbtCompound
     }
@@ -159,6 +146,7 @@ class doorEmitterInventory(): Inventory{
 
         if (itemStack.count <= amount) {
             setStack(slot, null)
+            setSlots--
         } else {
             result.count = amount
             itemStack.decrement(amount)
@@ -174,6 +162,7 @@ class doorEmitterInventory(): Inventory{
             val result = itemStack.copy()
             setStack(slot, null)
             markDirty()
+            setSlots--
             return result
         }
         return ItemStack.EMPTY
@@ -195,6 +184,7 @@ class doorEmitterInventory(): Inventory{
         val x = cords.first
         val y = cords.second
         val z = cords.third
+        if(inventory[z][y][x] == null) setSlots++
         inventory[z][y][x] = stack
         markDirty()
     }

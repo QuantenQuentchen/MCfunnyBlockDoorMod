@@ -1,5 +1,6 @@
 package funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions
 
+import funnyblockdoormod.funnyblockdoormod.core.containerClasses.imgPartInfo
 import funnyblockdoormod.funnyblockdoormod.core.dataClasses.IntPoint2D
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.texture.NativeImage

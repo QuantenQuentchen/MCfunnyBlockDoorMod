@@ -22,93 +22,108 @@ class placementIteratorManager() {
     private val maxY = 5
     private val maxZ = 25
 
-    private var x = getMiddle(maxX)
-    private var y = getMiddle(maxY)
-    private var z = 0
-    private var state = 0
-    private var layer = 0
+    private val midX = getMiddle(maxX)
+    private val midY = getMiddle(maxY)
 
 
-    private fun getMiddle(size: Int): Int {
-        return (size + 1) / 2
+    private var idx = 0
+
+
+    private val state: Int
+        get() = (idx) % 25
+
+    private val layer: Int
+        get() = (idx).floorDiv(25)
+
+    private fun getPos(): Vec3i {
+
+        val layerVec = Vec3i(midX, midY, layer)
+
+        val direction = determineDirection()
+
+        return direction.add(layerVec)
     }
 
-    //private val middle = ((sizeY + 1) / 2) -1
+
+    private fun incrementIdx() {
+        idx++
+    }
+
+    private fun decrementIdx() {
+        idx--
+    }
+
+    private fun determineDirection(): Vec3i {
+        return when (state) {
+            0 -> Vec3i(0, 0, 0)
+            1 -> Vec3i(0, 1, 0)
+            2 -> Vec3i(1, 0, 0)
+            3 -> Vec3i(0, -1, 0)
+            4 -> Vec3i(-1, 0, 0)
+
+            5 -> Vec3i(-1, -1, 0)
+            6 -> Vec3i(-1, 1, 0)
+            7 -> Vec3i(1, -1, 0)
+            8 -> Vec3i(1, 1, 0)
+
+            9 -> Vec3i(0, 2, 0)
+            10 -> Vec3i(2, 0, 0)
+            11 -> Vec3i(0, -2, 0)
+            12 -> Vec3i(-2, 0, 0)
+
+            13 -> Vec3i(-2, -2, 0)
+            14 -> Vec3i(-2, 2, 0)
+            15 -> Vec3i(2, -2, 0)
+            16 -> Vec3i(2, 2, 0)
+
+            17 -> Vec3i(-2, -1, 0)
+            18 -> Vec3i(-2, 1, 0)
+            19 -> Vec3i(2, -1, 0)
+            20 -> Vec3i(2, 1, 0)
+
+            21 -> Vec3i(-1, -2, 0)
+            22 -> Vec3i(-1, 2, 0)
+            23 -> Vec3i(1, -2, 0)
+            24 -> Vec3i(1, 2, 0)
+
+            else -> Vec3i(0, 0, 0)
+        }
+    }
+
+    private fun getMiddle(size: Int): Int {
+        return size.floorDiv(2)
+    }
 
     fun toNbt(): NbtCompound {
         val nbt = NbtCompound()
-        nbt.putInt("x", x)
-        nbt.putInt("y", y)
-        nbt.putInt("z", z)
-        nbt.putInt("state", state)
-        nbt.putInt("layer", layer)
+        nbt.putInt("idx", idx)
         return nbt
     }
 
     fun fromNbt(nbt: NbtCompound) {
-        x = nbt.getInt("x")
-        y = nbt.getInt("y")
-        z = nbt.getInt("z")
-        state = nbt.getInt("state")
-        layer = nbt.getInt("layer")
+        idx = nbt.getInt("idx")
     }
 
 
     fun hasNext(): Boolean {
-        return z < maxZ
+        return idx < maxX * maxY * maxZ
     }
 
-    fun next(): Vec3i? {
-
-        FunnyBlockDoorMod.logger.info("x: $x, y: $y, z: $z, state: $state, layer: $layer")
-
-        val item = when (state) {
-            0 -> Vec3i(z, y - layer, x) // Up
-            1 -> Vec3i(z, y, x + layer) // Right
-            2 -> Vec3i(z, y + layer, x) // Down
-            3 -> Vec3i(z, y, x - layer) // Left
-            else -> null
-        }
-        state = (state + 1) % 4
-        if (state == 0) {
-            layer++
-            if (layer > x || layer > y) {
-                layer = 0
-                if (z < maxZ - 1) {
-                    z++
-                }
-            }
-        }
-        return item
+    fun next(): Vec3i {
+        val pos = getPos()
+        incrementIdx()
+        return pos
     }
 
 
-    fun revHasNext(): Boolean {
-        return z >= 0
+    fun hasPrevious(): Boolean {
+        return idx >= 0
     }
 
-    fun revNext(): Vec3i? {
-
-        FunnyBlockDoorMod.logger.info("Reverse: x: $x, y: $y, z: $z, state: $state, layer: $layer")
-
-        val item = when (state) {
-            0 -> Vec3i(z, y + layer, x) // Down
-            1 -> Vec3i(z, y, x - layer) // Left
-            2 -> Vec3i(z, y - layer, x) // Up
-            3 -> Vec3i(z, y, x + layer) // Right
-            else -> null
-        }
-        state = (state + 1) % 4
-        if (state == 0) {
-            layer++
-            if (layer > x || layer > y) {
-                layer = 0
-                if (z > 0) {
-                    z--
-                }
-            }
-        }
-        return item
+    fun previous(): Vec3i {
+        val pos = getPos()
+        decrementIdx()
+        return pos
     }
 
 }

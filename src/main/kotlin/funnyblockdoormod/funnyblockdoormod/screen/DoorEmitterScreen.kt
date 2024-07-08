@@ -2,21 +2,18 @@ package funnyblockdoormod.funnyblockdoormod.screen
 
 import com.mojang.blaze3d.systems.RenderSystem
 import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
-import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.teamRebornEnergyScreen
+import funnyblockdoormod.funnyblockdoormod.core.containerClasses.Vec2i
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.ButtonIcon
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IconButtonWidget
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IconToggleWidget
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.LimitedNumberFieldWidget
+import funnyblockdoormod.funnyblockdoormod.screen.expandableScreen.ExpandableScreen
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.render.GameRenderer
-import net.minecraft.client.texture.Sprite
 import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.screen.ScreenHandler
-import net.minecraft.screen.slot.Slot
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import kotlin.math.min
 
@@ -24,6 +21,18 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
     : HandledScreen<DoorEmitterScreenHandler>(handler, inventory, title) {
 
         private val texture = Identifier(FunnyBlockDoorMod.MOD_ID, "textures/gui/door_emitter_gui_legacy.png")
+
+
+    companion object {
+
+        val sideScreens: MutableList<ExpandableScreen.Factory> = mutableListOf()
+
+        fun addSideScreen(screen: ExpandableScreen.Factory){
+            sideScreens.add(screen)
+        }
+    }
+
+    private val offsetList: MutableList<Int> = mutableListOf()
 
     private val maxAngle = 360
     private val minAngle = 0
@@ -83,12 +92,47 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         return y + TabsRowY
     }
 
-    fun getTabsContentX(): Int {
-        return x + TabsContentX
+    fun addSpacing(spacing: Int){
+        offsetList.add(spacing)
     }
 
-    fun getTabsContentY(): Int {
-        return y + TabsContentY
+    fun modifySpacing(idx: Int, spacing: Int){
+        offsetList[idx] = spacing
+    }
+
+    fun registerSpacing(spacing: Int): Int{
+        offsetList.add(spacing)
+        return offsetList.size - 1
+    }
+
+    fun getTabsOrigin(idx: Int): Vec2i {
+
+        val endIdx = min(idx, offsetList.size)
+
+        return Vec2i(x + TabsRowX + addOffsets(endIdx), y + TabsRowY)
+    }
+
+    private fun registerAllScreens(){
+        var idx = 0
+        for (screen in sideScreens){
+            val sc = screen.createScreen(this, handler, idx)
+            registerSideScreen(sc)
+            idx++
+        }
+    }
+
+    private fun registerSideScreen(sideScreen: ExpandableScreen?){
+        if(sideScreen == null) return
+        addDrawableChild(sideScreen)
+        addSelectableChild(sideScreen)
+    }
+
+    private fun addOffsets(endIdx: Int): Int {
+        var sum = 0
+        for(i in 0 until endIdx){
+            sum += offsetList[i]
+        }
+        return sum
     }
 
     private val upIcon = ButtonIcon.getButtonIcon(
@@ -109,7 +153,7 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         16, 16,
     )
 
-    private val energysubScreen = teamRebornEnergyScreen(this, handler)
+    //private val energysubScreen = teamRebornEnergyScreen(this, handler, 0)
 
     override fun init() {
         super.init()
@@ -124,7 +168,8 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         addIncrementButtons(yAngleIncrX, yAngleIncrY, { handler.decrementYAngle() }, { handler.incrementYAngle() })
         addIncrementButtons(zAngleIncrX, zAngleIncrY, { handler.decrementZAngle() }, { handler.incrementZAngle() })
 
-        energysubScreen.registerEnergyScreenTab(getTabsRowX(), getTabsRowY())
+        registerAllScreens()
+        //energysubScreen.registerEnergyScreenTab(getTabsRowX(), getTabsRowY())
     }
 
 
@@ -210,14 +255,6 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         //backgroundWidth = 190
     }
 
-    fun getX(): Int {
-        return x
-    }
-
-    fun getY(): Int {
-        return y
-    }
-
     private fun transformToGui(x: Int, y: Int): Pair<Int, Int> {
         val guiX = (width - backgroundWidth) / 2
         val guiY = (height - backgroundHeight) / 2
@@ -277,7 +314,7 @@ class DoorEmitterScreen(handler: DoorEmitterScreenHandler, inventory:PlayerInven
         renderBackground(context)
 
         if (context != null) {
-            energysubScreen.drawEnergyScreen(context)
+            //energysubScreen.drawEnergyScreen(context)
         }
         super.render(context, mouseX, mouseY, delta)
         renderNum(context, handler.getInvDepth(), invDepthX, invDepthY)

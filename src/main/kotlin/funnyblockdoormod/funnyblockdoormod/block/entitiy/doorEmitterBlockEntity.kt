@@ -1,7 +1,9 @@
 package funnyblockdoormod.funnyblockdoormod.block.entitiy
 
 import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
+import funnyblockdoormod.funnyblockdoormod.block.RedstoneEmitter
 import funnyblockdoormod.funnyblockdoormod.block.custom.blockPlaceUtil
+import funnyblockdoormod.funnyblockdoormod.block.custom.doorEmitterBlock.Companion.FACING
 import funnyblockdoormod.funnyblockdoormod.block.custom.doorEmitterInventory
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.baseWirelessRedstone
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.noEnergy
@@ -12,7 +14,6 @@ import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.Iw
 import funnyblockdoormod.funnyblockdoormod.core.containerClasses.BlockPos3DGrid
 import funnyblockdoormod.funnyblockdoormod.core.dataClasses.OBB
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.InventoryDepthChange
-import funnyblockdoormod.funnyblockdoormod.debug.debugBlockStateList
 import funnyblockdoormod.funnyblockdoormod.screen.DoorEmitterScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
@@ -92,9 +93,28 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
     private var wirelessRedstoneBehaviour: IwirelessRedstoneBehaviour = baseWirelessRedstone
 
+    private fun getRecievingRedstone(state: BlockState, world: World, pos: BlockPos): Boolean {
+        val facingDirection = state.get(FACING)
+        return world.isEmittingRedstonePower(pos, facingDirection)
+    }
+
+    private fun updateRedstone(state: BlockState, world: World, pos: BlockPos) {
+
+        val currentPoweredState = state.get(RedstoneEmitter.POWERED)
+        val shouldPower = getRecievingRedstone(state, world, pos)
+
+        if (shouldPower != currentPoweredState) {
+            setCharged(shouldPower)
+        }
+
+    }
+
     init {
+        val state = world?.getBlockState(pos)
+        world?.let { updateRedstone(state!!, it, pos) }
         energyBehaviour.init()
         wirelessRedstoneBehaviour.init()
+        subToChannel()
     }
 
     var inventory: doorEmitterInventory = doorEmitterInventory()
@@ -119,13 +139,13 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
         currentBlockDelay--
     }
 
-    private fun canOperate(): Boolean {
+    private fun cooldownOver(): Boolean {
         return currentBlockDelay <= 0
     }
 
     private var isCharged = false
 
-    private var redstoneActivationBehaviour = false
+    private var currentChannel: Int? = null
 
     private var lastTickTime = System.currentTimeMillis()
     private var currentXAngle: Float = 0f
@@ -176,15 +196,14 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     }
 
     override fun writeScreenOpeningData(player: ServerPlayerEntity?, buf: PacketByteBuf?) {
-        if (buf != null) {
-            buf.writeBlockPos(this.pos)
-        }
+        buf?.writeBlockPos(this.pos)
     }
 
     override fun writeNbt(nbt: NbtCompound?) {
         super.writeNbt(nbt)
         nbt?.put("inventory", inventory.toNbt())
         nbt?.putInt("invDepth", invDepth)
+        nbt?.putInt("channel", currentChannel ?: -1)
     }
 
     override fun markDirty() {
@@ -194,7 +213,10 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     override fun readNbt(nbt: NbtCompound?) {
         super.readNbt(nbt)
         inventory = doorEmitterInventory.fromNbt(nbt!!.get("inventory") as NbtCompound)
-        invDepth = nbt.getInt("progress") ?: 0
+        invDepth = nbt.getInt("progress")
+        currentChannel = nbt.getInt("channel")
+        if(currentChannel != -1) subToChannel()
+        else currentChannel = null
     }
 
     override fun getItems(): DefaultedList<ItemStack> {
@@ -239,6 +261,9 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private fun placeOverlayBlocks(world: World, pos: BlockPos, block: BlockState) {
     }
 
+    private fun unplaceOverlayBlocks(world: World, pos: BlockPos, block: BlockState) {
+    }
+
     fun modifyInvDepth(invDepthDelta: Int) {
         invDepth += invDepthDelta
         if (invDepth < 0) {
@@ -262,6 +287,15 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
         this.propertyDelegate.set(1, encodeBlockedStates(blockedSlots))
     }
 
+    private fun canOperate(): Boolean {
+        if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return false
+        if(!cooldownOver()) {
+            decrementBlockDelay()
+            return false
+        }
+        return true
+    }
+
     private var ticks = 0
     private var switch = false
     private var x = 0
@@ -270,22 +304,8 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     private var i = 0
     fun tick(world: World, pos: BlockPos, state: BlockState) {
 
-        //debugDrawOBB(world, OBB.getRotatedOBB(currentXAngle, currentYAngle, currentZAngle), pos)
-
-        //debugOBBOffsets(world, pos)
-
         if (world.isClient) return
         if (!world.isChunkLoaded(pos)) return
-
-
-        if(!canOperate()) {
-            decrementBlockDelay()
-            return
-        }
-
-        debugOBBOffsets(world, pos)
-
-        if(!energyBehaviour.canConsume(energyConsumptionPerBlock)) return
 
 
         val currentTickTime = System.currentTimeMillis()
@@ -295,13 +315,10 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
         when(extensionState) {
             ExtensionState.EXTENDING -> {
-                energyBehaviour.consume(energyConsumptionPerBlock)
                 emittTick(world, pos)
-
             }
 
             ExtensionState.RETRACTING -> {
-                energyBehaviour.consume(energyConsumptionPerBlock)
                 retractTick(world, pos)
             }
 
@@ -313,35 +330,6 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
                 //I dunno have fun, or notify extension Listeners ig, I dunno, but have it here for completion with ENUM States
             }
         }
-        //End Tick Logic
-/*        ticks++
-        if (ticks >= 50 && switch) {
-            world.players.forEach { player -> player.sendMessage(Text.of("Emitting x:$currentXAngle, y:$currentYAngle, z:$currentZAngle")) }
-            emittTick(world, pos)
-            switch = false
-            ticks = 0
-        }
-        if (ticks >= 50 && !switch) {
-            world.players.forEach { player -> player.sendMessage(Text.of("Retracting x:$currentXAngle, y:$currentYAngle, z:$currentZAngle")) }
-            testretractTikc(world, pos)
-             if(currentXAngle >= 180){
-                currentXAngle = 0f
-                currentYAngle += 1
-            }
-            if (currentYAngle >= 360) {
-                currentYAngle = 0f
-                currentZAngle += 1
-            }
-            if (currentZAngle >= 360) {
-                world.players.forEach() { player -> player.sendMessage(Text.of("Test Complete")) }
-            }
-            currentYAngle += 1
-            currentEmittingGrid = OBB.getEmittingGrid(currentXAngle, currentYAngle, currentZAngle)
-            currentOBB = OBB.getRotatedOBB(currentXAngle, currentYAngle, currentZAngle)
-            currentOBB.debugDrawOBB(world, currentOBB, pos)
-            switch = true
-            ticks = 0
-        }*/
         lastTickTime = currentTickTime
     }
 
@@ -383,18 +371,6 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
     private fun emittTick(world: World, emitterPos: BlockPos) {
         //TODO: Figure out Quartz Issue apparently overstepping bounds
-/*        if(inventory.iterator().hasNext() && currentEmittingGrid.iterator().hasNext()){
-            val item = inventory.iterator().next()
-            val pos = currentEmittingGrid.iterator().next()?.blockPos
-            if(item != null && pos != null){
-                val block = getBlockStateFromItemStack(item)
-                if(block != null){
-                    blockPlaceUtil.placeBlock(pos.add(emitterPos), world, block, false)
-                }
-            }
-        } else{
-            setExtendedState()
-        }*/
 
         if(placmentIterator.hasNext()){
 
@@ -402,9 +378,13 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
 
             val item = inventory.getStackOrNull(cords)
             val pos = currentEmittingGrid.getBlock(cords)?.blockPos
+
+
             if(item != null && pos != null){
                 val block = getBlockStateFromItemStack(item)
                 if(block != null){
+                    if(!canOperate()) return
+                    energyBehaviour.consume(energyConsumptionPerBlock)
                     blockPlaceUtil.placeBlock(pos.add(emitterPos), world, block, false)
                 }
             }
@@ -415,35 +395,43 @@ class doorEmitterBlockEntity : BlockEntity, ExtendedScreenHandlerFactory, Implem
     }
 
     private fun retractTick(world: World, emitterPos: BlockPos){
-/*        if(inventory.reverseIterator().hasNext() && currentEmittingGrid.reverseIterator().hasNext()){
-            val item = inventory.reverseIterator().next()
-            val pos = currentEmittingGrid.reverseIterator().next()?.blockPos
-            if(item != null && pos != null){
-                val block = getBlockStateFromItemStack(item)
-                if(block != null){
-                    blockPlaceUtil.removeBlock(pos.add(emitterPos), world, block, false)
-                }
-            }
-        } else{
-            setRetractedState()
-        }*/
 
-        if(placmentIterator.revHasNext()){
+        if(placmentIterator.hasPrevious()){
 
-            val cords = placmentIterator.revNext() ?: return
+            val cords = placmentIterator.previous()
 
-            val item = inventory.getStackOrNull(cords)
-            val pos = currentEmittingGrid.getBlock(cords)?.blockPos
-            if(item != null && pos != null){
-                val block = getBlockStateFromItemStack(item)
-                if(block != null){
-                    blockPlaceUtil.removeBlock(pos.add(emitterPos), world, block, false)
-                }
-            }
+            val item = inventory.getStackOrNull(cords) ?: return
+            FunnyBlockDoorMod.logger.info("Item: $item")
+            val pos = currentEmittingGrid.getBlock(cords)?.blockPos ?: return
+            val block = getBlockStateFromItemStack(item) ?: return
+
+            FunnyBlockDoorMod.logger.info("Pos: $item, $pos, $cords")
+
+            if(!canOperate()) return
+            energyBehaviour.consume(energyConsumptionPerBlock)
+            blockPlaceUtil.removeBlock(pos.add(emitterPos), world, block, false)
+
         } else{
             setRetractedState()
         }
 
+    }
+
+    private fun subToChannel(){
+        if (currentChannel == null) return
+        wirelessRedstoneBehaviour.subscribeToChannel(currentChannel!!, this)
+    }
+
+    private fun unsubFromChannel(channel: Int){
+        if (currentChannel == null) return
+        wirelessRedstoneBehaviour.unsubscribeFromChannel(currentChannel!!, this)
+    }
+
+    fun setNewChannel(channel: Int){
+        if (currentChannel == channel) return
+        unsubFromChannel(currentChannel!!)
+        currentChannel = channel
+        subToChannel()
     }
 
     override fun onChannelChange(isActive: Boolean) {

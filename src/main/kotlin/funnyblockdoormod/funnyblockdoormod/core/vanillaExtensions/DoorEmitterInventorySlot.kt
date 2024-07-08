@@ -54,14 +54,17 @@ class DoorEmitterInventorySlot(inventory: doorEmitterInventory, private var inde
     }
 
     override fun takeStack(amount: Int): ItemStack {
+        val st = inventory.getStack(calculateIndex())
+        st.count = 1
         inventory.removeStack(calculateIndex(), amount)
-        return ItemStack.EMPTY
+        return st
     }
 
     override fun insertStack(stack: ItemStack): ItemStack {
         if (this.canInsert(stack)) {
             // Set the slot's stack to a single item from the input stack, without decreasing the input stack
             this.setStackNoCallbacks(stack.copy().apply { count = 1 })
+            stack.decrement(1)
         }
         return stack
     }
