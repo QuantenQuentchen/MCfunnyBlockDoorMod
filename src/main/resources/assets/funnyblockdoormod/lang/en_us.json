@@ -6,5 +6,7 @@
 
   "block.funnyblockdoormod.redstone_emitter": "Redstone Emitter",
 
-  "block.funnyblockdoormod.redstone_reciever": "Redstone Receiver"
+  "block.funnyblockdoormod.redstone_reciever": "Redstone Receiver",
+
+  "block.funnyblockdoormod.force_field": "Force Field"
 }

@@ -6,10 +6,7 @@ import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.Iw
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneReciever
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneRecieverNum
 import funnyblockdoormod.funnyblockdoormod.core.containerClasses.BlockPosDim
-import funnyblockdoormod.funnyblockdoormod.core.containerClasses.stupidDimensionRegistry
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.minecraft.client.MinecraftClient
-import net.minecraft.nbt.NbtCompound
+import funnyblockdoormod.funnyblockdoormod.data.ServerHolder
 import net.minecraft.registry.RegistryKey
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
@@ -42,7 +39,7 @@ object baseWirelessRedstone: IwirelessRedstoneBehaviour {
         entityChannels[channel]?.forEach { it.get()?.onChannelChange(isActive) }
         wirelessRedstoneState.blockChannels[channel]?.forEach { posDim -> blockInstanceChannels.forEach{
             it.get()?.let {blockInstance->
-                val world = MinecraftClient.getInstance().server?.getWorld(wirelessRedstoneState.getKey(posDim.dim))?: return
+                val world = ServerHolder.server?.getWorld(wirelessRedstoneState.getKey(posDim.dim))?: return
                  blockInstance.onChannelChange(isActive, posDim.pos, world)
                 }
             }

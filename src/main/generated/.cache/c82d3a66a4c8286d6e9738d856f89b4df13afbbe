@@ -1,8 +1,10 @@
-// 1.20.1	2024-06-29T08:59:21.480818284	FunnyBlockDoorMod/Model Definitions
+// 1.20.1	2025-11-19T01:16:36.073832085	FunnyBlockDoorMod/Model Definitions
 73ebb4a3e0addc07c3d325f5947563b88f019b7d assets/funnyblockdoormod/models/item/upgrade_base.json
 1c06d624349068933e4e5a97c313d8740e90c880 assets/funnyblockdoormod/blockstates/redstone_reciever.json
+a5e7e94a3afb7fa8845ada50001d2b0be382ed38 assets/funnyblockdoormod/blockstates/force_field.json
 7189d633596509f6e881468ba3082be8a8bdc405 assets/funnyblockdoormod/models/item/redstone_reciever.json
 769e8adbc76dc765482fd7e20c5ed5bfe2197519 assets/funnyblockdoormod/blockstates/door_emitter.json
+392269be48e0be43a031d3c6db68063b7f5e2c8a assets/funnyblockdoormod/models/item/force_field.json
 78458968243f421570419202363116bdfac6d1a2 assets/funnyblockdoormod/models/item/door_emitter.json
 6230d1bdd0be3a6570e70e0ea2cb2c6dcec69136 assets/funnyblockdoormod/models/item/redstone_emitter.json
 486d36d6d8f5dce9343e2ac8a1f13ed2a2383a42 assets/funnyblockdoormod/blockstates/redstone_emitter.json

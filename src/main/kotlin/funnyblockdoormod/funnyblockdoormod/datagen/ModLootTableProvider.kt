@@ -17,6 +17,7 @@ class ModLootTableProvider(output: FabricDataOutput?) : FabricBlockLootTableProv
         addDrop(ModBlocks.DOOREMITTER)
         addDrop(ModBlocks.REDSTONEEMITTER)
         addDrop(ModBlocks.REDSTONERECIEVER)
+        addDrop(ModBlocks.FORCEFIELD)
     }
 
 }

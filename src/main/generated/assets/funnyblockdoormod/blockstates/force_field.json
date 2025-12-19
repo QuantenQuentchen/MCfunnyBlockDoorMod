@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=down,powered=false": {
+      "model": "funnyblockdoormod:block/force_field",
+      "x": 180,
+      "y": 0
+    },
+    "facing=down,powered=true": {
+      "model": "funnyblockdoormod:block/force_field_active",
+      "x": 180,
+      "y": 0
+    },
+    "facing=east,powered=false": {
+      "model": "funnyblockdoormod:block/force_field",
+      "x": 90,
+      "y": 90
+    },
+    "facing=east,powered=true": {
+      "model": "funnyblockdoormod:block/force_field_active",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north,powered=false": {
+      "model": "funnyblockdoormod:block/force_field",
+      "x": 90,
+      "y": 0
+    },
+    "facing=north,powered=true": {
+      "model": "funnyblockdoormod:block/force_field_active",
+      "x": 90,
+      "y": 0
+    },
+    "facing=south,powered=false": {
+      "model": "funnyblockdoormod:block/force_field",
+      "x": 90,
+      "y": 180
+    },
+    "facing=south,powered=true": {
+      "model": "funnyblockdoormod:block/force_field_active",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up,powered=false": {
+      "model": "funnyblockdoormod:block/force_field",
+      "x": 0,
+      "y": 0
+    },
+    "facing=up,powered=true": {
+      "model": "funnyblockdoormod:block/force_field_active",
+      "x": 0,
+      "y": 0
+    },
+    "facing=west,powered=false": {
+      "model": "funnyblockdoormod:block/force_field",
+      "x": 90,
+      "y": 270
+    },
+    "facing=west,powered=true": {
+      "model": "funnyblockdoormod:block/force_field_active",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

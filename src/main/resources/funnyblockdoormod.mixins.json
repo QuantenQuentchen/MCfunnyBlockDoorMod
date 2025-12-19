@@ -3,8 +3,9 @@
   "package": "funnyblockdoormod.funnyblockdoormod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ExampleMixin",
-    "RedstoneWireBlockMixin"
+    "RedstoneWireBlockMixin",
+    "ServerPlayerEntityMixin",
+    "WorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -18,6 +18,7 @@ class ModBlockTagProvider(output: FabricDataOutput?,
             .add(ModBlocks.DOOREMITTER)
             .add(ModBlocks.REDSTONEEMITTER)
             .add(ModBlocks.REDSTONERECIEVER)
+            .add(ModBlocks.FORCEFIELD)
     }
 
 

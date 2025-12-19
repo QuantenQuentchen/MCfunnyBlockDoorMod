@@ -3,6 +3,7 @@
   "values": [
     "funnyblockdoormod:door_emitter",
     "funnyblockdoormod:redstone_emitter",
-    "funnyblockdoormod:redstone_reciever"
+    "funnyblockdoormod:redstone_reciever",
+    "funnyblockdoormod:force_field"
   ]
 }

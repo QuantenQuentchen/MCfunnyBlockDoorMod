@@ -22,6 +22,7 @@ object ModItemGroups {
                 entries.add(ModBlocks.DOOREMITTER)
                 entries.add(ModBlocks.REDSTONEEMITTER)
                 entries.add(ModBlocks.REDSTONERECIEVER)
+                entries.add(ModBlocks.FORCEFIELD)
             }
             .build())
 

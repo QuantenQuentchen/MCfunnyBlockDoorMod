@@ -2,14 +2,10 @@ package funnyblockdoormod.funnyblockdoormod.block
 
 import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
 import funnyblockdoormod.funnyblockdoormod.annotations.ServerSideOnlyINFO
-import funnyblockdoormod.funnyblockdoormod.block.RedstoneReciever.Companion
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.baseWirelessRedstone
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IchangableChannel
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IConnectable
-import funnyblockdoormod.funnyblockdoormod.screen.DoorEmitterScreenHandler
-import funnyblockdoormod.funnyblockdoormod.screen.ModScreenHandlers
-import funnyblockdoormod.funnyblockdoormod.screen.WirelessRedstoneScreenHandler
-import io.netty.buffer.Unpooled
+import funnyblockdoormod.funnyblockdoormod.screenhandler.WirelessRedstoneScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
 import net.minecraft.block.BlockRenderType
@@ -20,7 +16,6 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.item.ItemStack
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.state.StateManager
@@ -34,8 +29,6 @@ import net.minecraft.util.Hand
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
-import net.minecraft.world.BlockView
-import net.minecraft.world.TestableWorld
 import net.minecraft.world.World
 
 class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel, IConnectable {
@@ -89,6 +82,7 @@ class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel, I
         return state.get(FACING)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun getRenderType(state: BlockState?): BlockRenderType {
         return BlockRenderType.MODEL
     }
@@ -110,6 +104,7 @@ class RedstoneEmitter(settings: Settings): Block(settings), IchangableChannel, I
         return if (state.get(Properties.POWERED) && getFacing(state) == direction) 15 else 0
     }*/
 
+    @Deprecated("Deprecated in Java")
     override fun onUse(state: BlockState, world: World, pos: BlockPos, player: PlayerEntity, hand: Hand, hit: BlockHitResult): ActionResult {
         if (!world.isClient) {
             player.openHandledScreen(object : ExtendedScreenHandlerFactory {

@@ -1,4 +1,5 @@
-// 1.20.1	2024-06-29T08:59:21.481093879	FunnyBlockDoorMod/Block Loot Tables
+// 1.20.1	2025-11-19T01:16:36.074162864	FunnyBlockDoorMod/Block Loot Tables
 898c7c6f93f9df034fcc1c4efa71946904fa9bda data/funnyblockdoormod/loot_tables/blocks/redstone_emitter.json
+41e170e15e5b6db31134081606172cc7be9bdb5b data/funnyblockdoormod/loot_tables/blocks/force_field.json
 0757f1938574c7c983007f62635095114e8e53ef data/funnyblockdoormod/loot_tables/blocks/redstone_reciever.json
 f1a685e20e58c0ec36da9413b7026cdf41dc26fd data/funnyblockdoormod/loot_tables/blocks/door_emitter.json

@@ -1,7 +1,5 @@
 package funnyblockdoormod.funnyblockdoormod.block.entitiy
 
-import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
-import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.math.Vec3i
 
@@ -25,9 +23,7 @@ class placementIteratorManager() {
     private val midX = getMiddle(maxX)
     private val midY = getMiddle(maxY)
 
-
     private var idx = 0
-
 
     private val state: Int
         get() = (idx) % 25

@@ -10,18 +10,31 @@ import net.minecraft.util.Identifier
 
 object ModBlockEntities {
 
-    val DOOR_EMITTER_BLOCK_ENTITY: BlockEntityType<doorEmitterBlockEntity> = registerDoorEmitterBlockEntity()
-    
-    private fun registerDoorEmitterBlockEntity(): BlockEntityType<doorEmitterBlockEntity> {
+    val DOOR_EMITTER_BLOCK_ENTITY: BlockEntityType<DoorEmitterBlockEntity> = registerDoorEmitterBlockEntity()
+    val FORCE_FIELD_BLOCK_ENTITY: BlockEntityType<ForceFieldBlockEntity> = registerForceFieldBlockEntity()
+
+    private fun registerDoorEmitterBlockEntity(): BlockEntityType<DoorEmitterBlockEntity> {
         val be = Registry.register(
             Registries.BLOCK_ENTITY_TYPE,
             Identifier(FunnyBlockDoorMod.MOD_ID, "door_emitter"),
             FabricBlockEntityTypeBuilder.create(
-                ::doorEmitterBlockEntity,
+                ::DoorEmitterBlockEntity,
                 ModBlocks.DOOREMITTER
             ).build()
         )
-        doorEmitterBlockEntity.registerAssociates(be)
+        DoorEmitterBlockEntity.registerAssociates(be)
+        return be
+    }
+    private fun registerForceFieldBlockEntity(): BlockEntityType<ForceFieldBlockEntity> {
+        val be = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            Identifier(FunnyBlockDoorMod.MOD_ID, "force_field"),
+            FabricBlockEntityTypeBuilder.create(
+                ::ForceFieldBlockEntity,
+                ModBlocks.FORCEFIELD
+            ).build()
+        )
+        //ForceFieldBlockEntity.registerAssociates(be)
         return be
     }
     

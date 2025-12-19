@@ -1,21 +1,16 @@
 package funnyblockdoormod.funnyblockdoormod.block
 
 import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
-import funnyblockdoormod.funnyblockdoormod.block.RedstoneEmitter.Companion
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations.baseWirelessRedstone
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IchangableChannel
-import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneReciever
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IwirelessRedstoneRecieverNum
 import funnyblockdoormod.funnyblockdoormod.core.vanillaExtensions.IConnectable
-import funnyblockdoormod.funnyblockdoormod.screen.WirelessRedstoneScreenHandler
+import funnyblockdoormod.funnyblockdoormod.screenhandler.WirelessRedstoneScreenHandler
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.block.Block
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
-import net.minecraft.block.RedstoneWireBlock
-import net.minecraft.block.RepeaterBlock
-import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -32,14 +27,11 @@ import net.minecraft.state.property.Properties
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
-import net.minecraft.util.Identifier
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
-import net.minecraft.world.WorldAccess
-import java.rmi.registry.Registry
 
 class RedstoneReciever(settings: Settings): Block(settings), IwirelessRedstoneRecieverNum, IchangableChannel,
     IConnectable {

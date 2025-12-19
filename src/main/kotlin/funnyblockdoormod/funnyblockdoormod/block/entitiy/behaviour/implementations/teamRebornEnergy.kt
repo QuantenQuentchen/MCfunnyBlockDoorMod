@@ -1,9 +1,8 @@
 package funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.implementations
 
-import funnyblockdoormod.funnyblockdoormod.FunnyBlockDoorMod
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IenergyBehaviour
 import funnyblockdoormod.funnyblockdoormod.block.entitiy.behaviour.interfaces.IenergyBehaviourFactory
-import funnyblockdoormod.funnyblockdoormod.block.entitiy.doorEmitterBlockEntity
+import funnyblockdoormod.funnyblockdoormod.block.entitiy.DoorEmitterBlockEntity
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import team.reborn.energy.api.EnergyStorage
@@ -20,7 +19,7 @@ class teamRebornEnergy(private val blockEntity: BlockEntity): IenergyBehaviour {
 
         override fun registerEnergyStorage(blockEntityType: BlockEntityType<*>) {
             EnergyStorage.SIDED.registerForBlockEntity(
-                { blockEntity, _ -> (blockEntity as? doorEmitterBlockEntity)?.energyBehaviour?.energyStorage as? SimpleEnergyStorage},
+                { blockEntity, _ -> (blockEntity as? DoorEmitterBlockEntity)?.energyBehaviour?.energyStorage as? SimpleEnergyStorage},
                 blockEntityType
             )
         }
@@ -30,7 +29,7 @@ class teamRebornEnergy(private val blockEntity: BlockEntity): IenergyBehaviour {
     override val energyStorage: SimpleEnergyStorage by lazy {
         object : SimpleEnergyStorage(1000, 10, 10) {
             override fun onFinalCommit() {
-                (blockEntity as doorEmitterBlockEntity).setEnergyStoragePropDel(amount.toInt())
+                (blockEntity as DoorEmitterBlockEntity).setEnergyStoragePropDel(amount.toInt())
                 blockEntity.markDirty()
             }
         }
